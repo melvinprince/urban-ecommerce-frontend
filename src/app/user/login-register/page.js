@@ -1,13 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation"; // 🆕 to get the router and current path
 import useAuthStore from "@/store/authStore";
 import PopupAlert from "@/components/PopupAlert";
 
 export default function Page() {
   const [activeTab, setActiveTab] = useState("login");
 
-  const { login, isLoggedIn, initializeAuth } = useAuthStore();
+  const { login, isLoggedIn, initializeAuth, redirectPath, setRedirectPath } =
+    useAuthStore();
+
+  const router = useRouter();
+  const pathname = usePathname(); // 🆕 Get current page URL
 
   // Form states
   const [name, setName] = useState("");
@@ -23,12 +28,22 @@ export default function Page() {
     initializeAuth();
   }, [initializeAuth]);
 
+  // If already logged in and visiting login-register page
   useEffect(() => {
     if (isLoggedIn) {
-      // User already logged in, go back
-      window.history.back();
+      router.push(redirectPath || "/");
+      setRedirectPath("/"); // Reset after using it
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, redirectPath, router, setRedirectPath]);
+
+  // Save previous page if user directly tries to visit login page manually
+  useEffect(() => {
+    const lastVisitedPage = localStorage.getItem("lastPage");
+
+    if (!lastVisitedPage || lastVisitedPage === "/user/login-register") {
+      localStorage.setItem("lastPage", "/"); // fallback
+    }
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -50,13 +65,9 @@ export default function Page() {
       localStorage.setItem("token", data.token);
       login(data.token);
 
-      setPopupType("success");
-      setPopupMessage("Login Successful");
-
-      // 🔥 After login, go back to previous page
-      setTimeout(() => {
-        window.history.back();
-      }, 1000);
+      const destination = localStorage.getItem("lastPage") || "/";
+      router.push(destination);
+      localStorage.removeItem("lastPage"); // Clean it after use
     } catch (error) {
       setPopupType("error");
       setPopupMessage(error.message);
@@ -89,13 +100,9 @@ export default function Page() {
       localStorage.setItem("token", data.token);
       login(data.token);
 
-      setPopupType("success");
-      setPopupMessage("Signup Successful");
-
-      // 🔥 After signup, go back to previous page
-      setTimeout(() => {
-        window.history.back();
-      }, 1000);
+      const destination = localStorage.getItem("lastPage") || "/";
+      router.push(destination);
+      localStorage.removeItem("lastPage"); // Clean it after use
     } catch (error) {
       setPopupType("error");
       setPopupMessage(error.message);
@@ -105,7 +112,7 @@ export default function Page() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="w-full max-w-md p-6">
-        {/* Show Popup */}
+        {/* Popup */}
         {popupMessage && (
           <PopupAlert
             type={popupType}
@@ -114,10 +121,9 @@ export default function Page() {
           />
         )}
 
-        {/* If logged in */}
+        {/* Tabs */}
         {!isLoggedIn ? (
           <>
-            {/* Tab Switcher */}
             <div className="flex mb-6">
               <button
                 onClick={() => setActiveTab("login")}
@@ -137,7 +143,6 @@ export default function Page() {
               </button>
             </div>
 
-            {/* Forms */}
             {activeTab === "login" && (
               <form onSubmit={handleLogin}>
                 <input

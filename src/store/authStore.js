@@ -5,7 +5,8 @@ const useAuthStore = create((set) => ({
   isLoggedIn: false,
   token: null,
   user: null,
-  hydrated: false, // 🛠 NEW state
+  hydrated: false,
+  redirectPath: "/", // 🆕 new field to store intended page
 
   login: (token) => {
     const decoded = jwtDecode(token);
@@ -36,6 +37,7 @@ const useAuthStore = create((set) => ({
       set({ hydrated: true });
     }
   },
-}));
 
+  setRedirectPath: (path) => set({ redirectPath: path }), // 🆕 new action
+}));
 export default useAuthStore;

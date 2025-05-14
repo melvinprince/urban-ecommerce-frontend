@@ -18,7 +18,7 @@ export default function Header() {
   }, [initializeAuth]);
 
   if (!hydrated) {
-    return null; // or loading spinner
+    return null;
   }
 
   return (
@@ -52,10 +52,7 @@ export default function Header() {
 
             {/* Admin Button */}
             {user?.role === "adm" && (
-              <Link
-                href="/admin/dashboard"
-                className="text-lg text-sgr hover:text-white"
-              >
+              <Link href="/admin" className="text-lg text-sgr hover:text-white">
                 Admin
               </Link>
             )}
