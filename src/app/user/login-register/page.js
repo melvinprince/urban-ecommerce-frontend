@@ -7,7 +7,7 @@ import PopupAlert from "@/components/PopupAlert";
 export default function Page() {
   const [activeTab, setActiveTab] = useState("login");
 
-  const { login, isLoggedIn, initializeAuth } = useAuthStore(); // Zustand magic!
+  const { login, isLoggedIn, initializeAuth } = useAuthStore();
 
   // Form states
   const [name, setName] = useState("");
@@ -22,6 +22,13 @@ export default function Page() {
   useEffect(() => {
     initializeAuth();
   }, [initializeAuth]);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      // User already logged in, go back
+      window.history.back();
+    }
+  }, [isLoggedIn]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -45,7 +52,11 @@ export default function Page() {
 
       setPopupType("success");
       setPopupMessage("Login Successful");
-      window.location.href = "/";
+
+      // 🔥 After login, go back to previous page
+      setTimeout(() => {
+        window.history.back();
+      }, 1000);
     } catch (error) {
       setPopupType("error");
       setPopupMessage(error.message);
@@ -80,6 +91,11 @@ export default function Page() {
 
       setPopupType("success");
       setPopupMessage("Signup Successful");
+
+      // 🔥 After signup, go back to previous page
+      setTimeout(() => {
+        window.history.back();
+      }, 1000);
     } catch (error) {
       setPopupType("error");
       setPopupMessage(error.message);
@@ -99,11 +115,7 @@ export default function Page() {
         )}
 
         {/* If logged in */}
-        {isLoggedIn ? (
-          <div className="text-center">
-            <p>You are logged in.</p>
-          </div>
-        ) : (
+        {!isLoggedIn ? (
           <>
             {/* Tab Switcher */}
             <div className="flex mb-6">
@@ -190,6 +202,10 @@ export default function Page() {
               </form>
             )}
           </>
+        ) : (
+          <div className="text-center">
+            <p>Redirecting...</p>
+          </div>
         )}
       </div>
     </div>

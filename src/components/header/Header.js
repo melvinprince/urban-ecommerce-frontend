@@ -18,7 +18,7 @@ export default function Header() {
   }, [initializeAuth]);
 
   if (!hydrated) {
-    return null;
+    return null; // or loading spinner
   }
 
   return (
@@ -46,9 +46,20 @@ export default function Header() {
           <>
             {user?.name && (
               <span className="text-lg text-sgr">
-                Welcome, {user.name.split(" ")[0]} 👋
+                Welcome, {user.name.split(" ")[0]}
               </span>
             )}
+
+            {/* Admin Button */}
+            {user?.role === "adm" && (
+              <Link
+                href="/admin/dashboard"
+                className="text-lg text-sgr hover:text-white"
+              >
+                Admin
+              </Link>
+            )}
+
             <button
               onClick={logout}
               className="text-lg text-sgr hover:text-white"
