@@ -7,43 +7,78 @@ import useCartStore from "@/store/cartStore";
 import useWishlistStore from "@/store/wishlistStore";
 
 export default function ProductCard({ product }) {
-  const addItem = useCartStore((state) => state.addItem);
+  const addItem = useCartStore((s) => s.addItem);
   const wishlistItems = useWishlistStore((s) => s.items);
   const addToWishlist = useWishlistStore((s) => s.addItem);
-  const removeFromWishlist = useWishlistStore((s) => s.removeItem);
+  const removeWishlist = useWishlistStore((s) => s.removeItem);
 
   const [adding, setAdding] = useState(false);
   const [wishLoading, setWishLoading] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
 
+  /* ──────────────────────────────────────────────────────────── */
   useEffect(() => {
     setIsWishlisted(wishlistItems.some((i) => i.product._id === product._id));
   }, [wishlistItems, product._id]);
 
+  /* ──────────────────────────────────────────────────────────── */
   const handleAddToCart = async (e) => {
     e.preventDefault();
+    if (adding) return;
     setAdding(true);
-    await addItem({
-      productId: product._id,
-      product,
-      quantity: 1,
-      size: product.sizes?.[0] ?? null,
-      color: product.colors?.[0] ?? null,
-    });
-    // If it was wishlisted, remove from wishlist
-    if (isWishlisted) {
-      const item = wishlistItems.find((i) => i.product._id === product._id);
-      if (item) await removeFromWishlist(item._id);
+
+    try {
+      /* 1. Fetch full document if catalogue item is incomplete */
+      let full = product;
+      const needsFetch =
+        !product.sizes?.length ||
+        !product.colors?.length ||
+        product.stock == null; // null OR undefined
+
+      if (needsFetch) {
+        const backend =
+          process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+        const res = await fetch(`${backend}/api/products/${product.slug}`);
+        if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+
+        const json = await res.json();
+        // unwrap common response shapes
+        full =
+          json?.data ?? // { success:true, data:{…} }
+          json?.product ?? // { product:{…} }
+          json; // raw product
+      }
+
+      /* 2. Push to cart */
+      await addItem({
+        productId: full._id,
+        product: full,
+        quantity: 1,
+        size: full.sizes?.[0] ?? null,
+        color: full.colors?.[0] ?? null,
+      });
+
+      /* 3. Optional: remove from wishlist */
+      if (isWishlisted) {
+        const entry = wishlistItems.find((i) => i.product._id === product._id);
+        if (entry) await removeWishlist(entry._id);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setAdding(false);
     }
-    setAdding(false);
   };
 
+  /* ──────────────────────────────────────────────────────────── */
   const toggleWishlist = async (e) => {
     e.preventDefault();
+    if (wishLoading) return;
     setWishLoading(true);
+
     if (isWishlisted) {
-      const item = wishlistItems.find((i) => i.product._id === product._id);
-      await removeFromWishlist(item._id);
+      const entry = wishlistItems.find((i) => i.product._id === product._id);
+      if (entry) await removeWishlist(entry._id);
     } else {
       await addToWishlist(product);
     }
@@ -52,13 +87,14 @@ export default function ProductCard({ product }) {
 
   if (!product) return null;
 
+  /* ──────────────────────────────────────────────────────────── */
   return (
-    <div className="relative border rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-300">
-      {/* Wishlist Toggle */}
+    <div className="relative border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+      {/* ♥ button */}
       <button
         onClick={toggleWishlist}
         disabled={wishLoading}
-        className="absolute top-2 right-2 z-10 bg-white bg-opacity-75 p-1 rounded-full hover:bg-opacity-100 transition"
+        className="absolute top-2 right-2 z-10 bg-white/75 p-1 rounded-full hover:bg-white"
       >
         {isWishlisted ? (
           <HeartOff size={20} className="text-red-500" />
@@ -67,18 +103,18 @@ export default function ProductCard({ product }) {
         )}
       </button>
 
-      {/* Product Link & Image */}
+      {/* image + link */}
       <Link href={`/product/${product.slug}`} className="block">
         <div className="relative w-full pt-[100%] bg-gray-100">
           <img
             src={product.images?.[0] || "/placeholder.png"}
             alt={product.title}
-            className="absolute top-0 left-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
           />
         </div>
       </Link>
 
-      {/* Details & Add to Cart */}
+      {/* details */}
       <div className="p-4 flex flex-col">
         <Link href={`/product/${product.slug}`} className="mb-2">
           <h2 className="text-lg font-semibold text-gray-800 truncate">
@@ -92,7 +128,7 @@ export default function ProductCard({ product }) {
         <button
           onClick={handleAddToCart}
           disabled={adding}
-          className="mt-auto bg-ogr text-white py-2 rounded text-center hover:bg-opacity-90 transition"
+          className="mt-auto bg-ogr text-white py-2 rounded hover:bg-opacity-90 transition disabled:opacity-50"
         >
           {adding ? "Adding…" : "Add to Cart"}
         </button>
