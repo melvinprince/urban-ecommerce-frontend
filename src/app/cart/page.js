@@ -34,7 +34,6 @@ export default function CartPage() {
           {items.map((item) => (
             <CartItem key={item._id} item={item} />
           ))}
-
           <CartSummary />
         </div>
       )}

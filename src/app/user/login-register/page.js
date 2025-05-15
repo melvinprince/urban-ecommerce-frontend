@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation"; // 🆕 to get the router and current path
+import { useRouter, usePathname } from "next/navigation";
 import useAuthStore from "@/store/authStore";
-import PopupAlert from "@/components/PopupAlert";
+import { loginUser, registerUser } from "@/lib/api"; // API methods
+import usePopupStore from "@/store/popupStore"; // 🆕 Global popup store
+import PopupAlert from "@/components/PopupAlert"; // To render globally
 
 export default function Page() {
   const [activeTab, setActiveTab] = useState("login");
@@ -11,8 +13,10 @@ export default function Page() {
   const { login, isLoggedIn, initializeAuth, redirectPath, setRedirectPath } =
     useAuthStore();
 
+  const { showSuccess, showError } = usePopupStore.getState(); // 🆕 Get popup methods
+
   const router = useRouter();
-  const pathname = usePathname(); // 🆕 Get current page URL
+  const pathname = usePathname();
 
   // Form states
   const [name, setName] = useState("");
@@ -20,28 +24,21 @@ export default function Page() {
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
 
-  // Popup states
-  const [popupMessage, setPopupMessage] = useState("");
-  const [popupType, setPopupType] = useState("success");
-
   useEffect(() => {
     initializeAuth();
   }, [initializeAuth]);
 
-  // If already logged in and visiting login-register page
   useEffect(() => {
     if (isLoggedIn) {
       router.push(redirectPath || "/");
-      setRedirectPath("/"); // Reset after using it
+      setRedirectPath("/");
     }
   }, [isLoggedIn, redirectPath, router, setRedirectPath]);
 
-  // Save previous page if user directly tries to visit login page manually
   useEffect(() => {
     const lastVisitedPage = localStorage.getItem("lastPage");
-
     if (!lastVisitedPage || lastVisitedPage === "/user/login-register") {
-      localStorage.setItem("lastPage", "/"); // fallback
+      localStorage.setItem("lastPage", "/");
     }
   }, []);
 
@@ -49,28 +46,18 @@ export default function Page() {
     e.preventDefault();
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/login`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        }
-      );
-
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.message || "Something went wrong");
+      const { data, message } = await loginUser({ email, password });
 
       localStorage.setItem("token", data.token);
       login(data.token);
 
+      showSuccess(message || "Logged in successfully!"); // 🆕 Show success
+
       const destination = localStorage.getItem("lastPage") || "/";
       router.push(destination);
-      localStorage.removeItem("lastPage"); // Clean it after use
+      localStorage.removeItem("lastPage");
     } catch (error) {
-      setPopupType("error");
-      setPopupMessage(error.message);
+      showError(error.message || "Login failed"); // 🆕 Show error
     }
   };
 
@@ -78,48 +65,35 @@ export default function Page() {
     e.preventDefault();
 
     if (password !== repeatPassword) {
-      setPopupType("error");
-      setPopupMessage("Passwords do not match");
+      showError("Passwords do not match"); // 🆕 Show error
       return;
     }
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/register`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password, repeatPassword }),
-        }
-      );
-
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.message || "Something went wrong");
+      const { data, message } = await registerUser({
+        name,
+        email,
+        password,
+        repeatPassword,
+      });
 
       localStorage.setItem("token", data.token);
       login(data.token);
 
+      showSuccess(message || "Account created successfully!"); // 🆕 Show success
+
       const destination = localStorage.getItem("lastPage") || "/";
       router.push(destination);
-      localStorage.removeItem("lastPage"); // Clean it after use
+      localStorage.removeItem("lastPage");
     } catch (error) {
-      setPopupType("error");
-      setPopupMessage(error.message);
+      showError(error.message || "Signup failed"); // 🆕 Show error
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="w-full max-w-md p-6">
-        {/* Popup */}
-        {popupMessage && (
-          <PopupAlert
-            type={popupType}
-            message={popupMessage}
-            onClose={() => setPopupMessage("")}
-          />
-        )}
+        {/* Popup is globally rendered */}
 
         {/* Tabs */}
         {!isLoggedIn ? (

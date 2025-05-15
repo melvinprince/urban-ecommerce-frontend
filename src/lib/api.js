@@ -9,4 +9,68 @@ const api = axios.create({
   },
 });
 
+// Attach auth token automatically
+api.interceptors.request.use(
+  (config) => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Handle responses
+api.interceptors.response.use(
+  (response) => {
+    const res = response.data;
+    if (!res.success) {
+      const error = new Error(res.message || "Unknown API error");
+      error.response = res;
+      throw error;
+    }
+    return res;
+  },
+  (error) => {
+    const customError = new Error(
+      error.response?.data?.message || error.message || "Server Error"
+    );
+    customError.response = error.response?.data;
+    return Promise.reject(customError);
+  }
+);
+
+// --- API Functions ---
+
+// Auth
+export const registerUser = (credentials) =>
+  api.post("/api/auth/register", credentials);
+export const loginUser = (credentials) =>
+  api.post("/api/auth/login", credentials);
+
+// Products
+export const getProducts = (params = {}) =>
+  api.get("/api/products", { params });
+export const getProductBySlug = (slug) => api.get(`/api/products/${slug}`);
+
+// Categories
+export const getCategories = () => api.get("/api/categories");
+
+// Cart (Protected)
+export const getCart = () => api.get("/api/cart");
+export const addOrUpdateCartItem = (item) => api.post("/api/cart", item);
+export const removeCartItem = (itemId) => api.delete(`/api/cart/${itemId}`);
+export const updateCartItem = (itemId, item) =>
+  api.put(`/api/cart/${itemId}`, item);
+
+// Wishlist (Protected)
+export const getWishlist = () => api.get("/api/wishlist");
+export const addToWishlist = (product) => api.post("/api/wishlist", product);
+export const removeFromWishlist = (itemId) =>
+  api.delete(`/api/wishlist/${itemId}`);
+export const clearWishlist = () => api.post("/api/wishlist/clear");
+
 export default api;

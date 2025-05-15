@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import ProductGallery from "@/components/productDetail/ProductGallery";
 import ProductInfo from "@/components/productDetail/ProductInfo";
+import { getProductBySlug } from "@/lib/api"; // 🆕 Import API
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
@@ -14,10 +15,7 @@ export default function ProductDetailPage() {
   useEffect(() => {
     async function fetchProduct() {
       try {
-        const API = process.env.NEXT_PUBLIC_BACKEND_URL;
-        const res = await fetch(`${API}/api/products/${slug}`);
-        if (!res.ok) throw new Error(`Status ${res.status}`);
-        const { data } = await res.json();
+        const { data } = await getProductBySlug(slug); // 🆕
         setProduct(data);
       } catch (err) {
         setError(err.message);
@@ -25,7 +23,7 @@ export default function ProductDetailPage() {
         setLoading(false);
       }
     }
-    fetchProduct();
+    if (slug) fetchProduct(); // avoid call if slug is not ready
   }, [slug]);
 
   if (loading) return <div className="p-6">Loading product…</div>;

@@ -1,15 +1,16 @@
-// src/components/cart/CartItem.jsx
-
 "use client";
 
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import useCartStore from "@/store/cartStore";
 import { Trash2 } from "lucide-react";
+import usePopupStore from "@/store/popupStore"; // 🆕 Global popup
 
 export default function CartItem({ item }) {
   const updateItem = useCartStore((s) => s.updateItem);
   const removeItem = useCartStore((s) => s.removeItem);
+
+  const { showSuccess, showError } = usePopupStore.getState(); // 🆕 popup methods
 
   const prod = item.product || {};
   const maxQty = prod.stock ?? 0;
@@ -34,35 +35,64 @@ export default function CartItem({ item }) {
 
   const handleQtyBlur = async () => {
     if (qty !== item.quantity) {
-      setBusy(true);
-      await updateItem(item._id, { quantity: qty });
-      setBusy(false);
+      try {
+        setBusy(true);
+        await updateItem(item._id, { quantity: qty });
+        showSuccess("Quantity updated."); // 🆕
+      } catch (err) {
+        console.error(err);
+        showError("Failed to update quantity."); // 🆕
+      } finally {
+        setBusy(false);
+      }
     }
   };
 
   const handleSizeChange = async (e) => {
     const newSize = e.target.value;
     if (newSize !== size) {
-      setBusy(true);
-      setSize(newSize);
-      await updateItem(item._id, { size: newSize });
-      setBusy(false);
+      try {
+        setBusy(true);
+        setSize(newSize);
+        await updateItem(item._id, { size: newSize });
+        showSuccess("Size updated."); // 🆕
+      } catch (err) {
+        console.error(err);
+        showError("Failed to update size."); // 🆕
+      } finally {
+        setBusy(false);
+      }
     }
   };
 
   const handleColorChange = async (e) => {
     const newColor = e.target.value;
     if (newColor !== color) {
-      setBusy(true);
-      setColor(newColor);
-      await updateItem(item._id, { color: newColor });
-      setBusy(false);
+      try {
+        setBusy(true);
+        setColor(newColor);
+        await updateItem(item._id, { color: newColor });
+        showSuccess("Color updated."); // 🆕
+      } catch (err) {
+        console.error(err);
+        showError("Failed to update color."); // 🆕
+      } finally {
+        setBusy(false);
+      }
     }
   };
 
   const handleRemove = async () => {
-    setBusy(true);
-    await removeItem(item._id);
+    try {
+      setBusy(true);
+      await removeItem(item._id);
+      showSuccess("Item removed from cart."); // 🆕
+    } catch (err) {
+      console.error(err);
+      showError("Failed to remove item."); // 🆕
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (

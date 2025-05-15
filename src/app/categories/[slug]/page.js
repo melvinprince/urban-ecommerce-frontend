@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import ProductGrid from "@/components/products/ProductGrid";
+import { getProducts } from "@/lib/api"; // 🆕 Clean API import
 
 export default function CategoryProductsPage() {
   const { slug } = useParams();
@@ -12,32 +13,16 @@ export default function CategoryProductsPage() {
 
   useEffect(() => {
     async function fetchProducts() {
-      console.log("Fetching products for category slug:", slug); // ✅ Log 1
       try {
-        const API = process.env.NEXT_PUBLIC_BACKEND_URL;
-        const url = `${API}/api/products?category=${slug}`;
-        console.log("API URL:", url); // ✅ Log 2
-
-        const res = await fetch(url);
-        console.log("Fetch Response Status:", res.status); // ✅ Log 3
-
-        if (!res.ok) throw new Error(`Status ${res.status}`);
-
-        const responseData = await res.json();
-        console.log("Full API Response:", responseData); // ✅ Log 4
-
-        const { data } = responseData;
-        console.log("Extracted Products Array:", data); // ✅ Log 5
-
+        const { data } = await getProducts({ category: slug }); // 🆕
         setProducts(data);
       } catch (err) {
-        console.error("Error fetching products:", err.message); // ✅ Log 6
         setError(err.message);
       } finally {
         setLoading(false);
       }
     }
-    fetchProducts();
+    if (slug) fetchProducts(); // 🆕 Avoid unnecessary fetch if slug is undefined
   }, [slug]);
 
   if (loading) return <div className="p-6">Loading products…</div>;

@@ -5,6 +5,8 @@ import { useState, useEffect } from "react";
 import { Heart, HeartOff } from "lucide-react";
 import useCartStore from "@/store/cartStore";
 import useWishlistStore from "@/store/wishlistStore";
+import { getProductBySlug } from "@/lib/api";
+import usePopupStore from "@/store/popupStore"; // 🆕 GLOBAL popup store (NOT local state!)
 
 export default function ProductCard({ product }) {
   const addItem = useCartStore((s) => s.addItem);
@@ -12,44 +14,34 @@ export default function ProductCard({ product }) {
   const addToWishlist = useWishlistStore((s) => s.addItem);
   const removeWishlist = useWishlistStore((s) => s.removeItem);
 
+  const { showSuccess, showError } = usePopupStore.getState(); // 🆕 popup functions
+
   const [adding, setAdding] = useState(false);
   const [wishLoading, setWishLoading] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
 
-  /* ──────────────────────────────────────────────────────────── */
   useEffect(() => {
     setIsWishlisted(wishlistItems.some((i) => i.product._id === product._id));
   }, [wishlistItems, product._id]);
 
-  /* ──────────────────────────────────────────────────────────── */
   const handleAddToCart = async (e) => {
     e.preventDefault();
     if (adding) return;
     setAdding(true);
 
     try {
-      /* 1. Fetch full document if catalogue item is incomplete */
       let full = product;
+
       const needsFetch =
         !product.sizes?.length ||
         !product.colors?.length ||
-        product.stock == null; // null OR undefined
+        product.stock == null;
 
       if (needsFetch) {
-        const backend =
-          process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-        const res = await fetch(`${backend}/api/products/${product.slug}`);
-        if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
-
-        const json = await res.json();
-        // unwrap common response shapes
-        full =
-          json?.data ?? // { success:true, data:{…} }
-          json?.product ?? // { product:{…} }
-          json; // raw product
+        const { data } = await getProductBySlug(product.slug);
+        full = data;
       }
 
-      /* 2. Push to cart */
       await addItem({
         productId: full._id,
         product: full,
@@ -58,39 +50,47 @@ export default function ProductCard({ product }) {
         color: full.colors?.[0] ?? null,
       });
 
-      /* 3. Optional: remove from wishlist */
       if (isWishlisted) {
         const entry = wishlistItems.find((i) => i.product._id === product._id);
         if (entry) await removeWishlist(entry._id);
       }
+
+      showSuccess("Added to cart successfully!"); // 🆕
     } catch (err) {
       console.error(err);
+      showError(err.message || "Failed to add to cart."); // 🆕
     } finally {
       setAdding(false);
     }
   };
 
-  /* ──────────────────────────────────────────────────────────── */
   const toggleWishlist = async (e) => {
     e.preventDefault();
     if (wishLoading) return;
     setWishLoading(true);
 
-    if (isWishlisted) {
-      const entry = wishlistItems.find((i) => i.product._id === product._id);
-      if (entry) await removeWishlist(entry._id);
-    } else {
-      await addToWishlist(product);
+    try {
+      if (isWishlisted) {
+        const entry = wishlistItems.find((i) => i.product._id === product._id);
+        if (entry) await removeWishlist(entry._id);
+        showSuccess("Removed from wishlist."); // 🆕
+      } else {
+        await addToWishlist(product);
+        showSuccess("Added to wishlist!"); // 🆕
+      }
+    } catch (err) {
+      console.error(err);
+      showError(err.message || "Failed to update wishlist."); // 🆕
+    } finally {
+      setWishLoading(false);
     }
-    setWishLoading(false);
   };
 
   if (!product) return null;
 
-  /* ──────────────────────────────────────────────────────────── */
   return (
     <div className="relative border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-      {/* ♥ button */}
+      {/* ♥ Wishlist button */}
       <button
         onClick={toggleWishlist}
         disabled={wishLoading}
@@ -103,7 +103,7 @@ export default function ProductCard({ product }) {
         )}
       </button>
 
-      {/* image + link */}
+      {/* Product Image */}
       <Link href={`/product/${product.slug}`} className="block">
         <div className="relative w-full pt-[100%] bg-gray-100">
           <img
@@ -114,7 +114,7 @@ export default function ProductCard({ product }) {
         </div>
       </Link>
 
-      {/* details */}
+      {/* Product Details */}
       <div className="p-4 flex flex-col">
         <Link href={`/product/${product.slug}`} className="mb-2">
           <h2 className="text-lg font-semibold text-gray-800 truncate">

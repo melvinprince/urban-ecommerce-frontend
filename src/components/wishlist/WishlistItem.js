@@ -5,15 +5,24 @@ import Link from "next/link";
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import useWishlistStore from "@/store/wishlistStore";
+import usePopupStore from "@/store/popupStore"; // 🆕 Global popup
 
 export default function WishlistItem({ item }) {
   const removeItem = useWishlistStore((s) => s.removeItem);
+  const { showSuccess, showError } = usePopupStore.getState(); // 🆕 popup methods
   const [loading, setLoading] = useState(false);
 
   const handleRemove = async () => {
-    setLoading(true);
-    await removeItem(item._id);
-    setLoading(false);
+    try {
+      setLoading(true);
+      await removeItem(item._id);
+      showSuccess("Item removed from wishlist."); // 🆕
+    } catch (err) {
+      console.error(err);
+      showError("Failed to remove item."); // 🆕
+    } finally {
+      setLoading(false);
+    }
   };
 
   const prod = item.product;
