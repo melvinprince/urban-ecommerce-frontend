@@ -14,11 +14,21 @@ export default function ProductInfo({ product }) {
   const removeFromWishlist = useWishlistStore((s) => s.removeItem);
 
   const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || "");
-  const [selectedColor, setSelectedColor] = useState(product.colors?.[0] || "");
+  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedColor, setSelectedColor] = useState("");
   const [adding, setAdding] = useState(false);
   const [wishLoading, setWishLoading] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
+
+  useEffect(() => {
+    // initialize defaults only if available
+    if (product.sizes?.length > 0) {
+      setSelectedSize(product.sizes[0]);
+    }
+    if (product.colors?.length > 0) {
+      setSelectedColor(product.colors[0]);
+    }
+  }, [product.sizes, product.colors]);
 
   useEffect(() => {
     setIsWishlisted(wishlistItems.some((i) => i.product._id === product._id));
@@ -33,7 +43,6 @@ export default function ProductInfo({ product }) {
       size: selectedSize,
       color: selectedColor,
     });
-    // remove from wishlist if present
     if (isWishlisted) {
       const item = wishlistItems.find((i) => i.product._id === product._id);
       if (item) await removeFromWishlist(item._id);
@@ -61,6 +70,7 @@ export default function ProductInfo({ product }) {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Title & Wishlist */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">{product.title}</h1>
         <button
@@ -81,13 +91,14 @@ export default function ProductInfo({ product }) {
         {(product.discountPrice ?? product.price).toFixed(2)} QAR
       </p>
 
-      {/* Size & Color */}
+      {/* Size Selector */}
       {product.sizes?.length > 0 && (
         <div className="flex flex-col">
           <label className="font-semibold mb-1">Size:</label>
           <select
             value={selectedSize}
             onChange={(e) => setSelectedSize(e.target.value)}
+            disabled={product.sizes.length === 0}
             className="border rounded p-2"
           >
             {product.sizes.map((sz) => (
@@ -98,12 +109,15 @@ export default function ProductInfo({ product }) {
           </select>
         </div>
       )}
+
+      {/* Color Selector */}
       {product.colors?.length > 0 && (
         <div className="flex flex-col">
           <label className="font-semibold mb-1">Color:</label>
           <select
             value={selectedColor}
             onChange={(e) => setSelectedColor(e.target.value)}
+            disabled={product.colors.length === 0}
             className="border rounded p-2"
           >
             {product.colors.map((cl) => (
@@ -115,30 +129,37 @@ export default function ProductInfo({ product }) {
         </div>
       )}
 
-      {/* Quantity & Actions */}
+      {/* Quantity */}
       <div className="flex flex-col">
         <label className="font-semibold mb-1">Quantity:</label>
         <input
           type="number"
           min="1"
+          max={product.stock}
           value={quantity}
-          onChange={(e) => setQuantity(parseInt(e.target.value, 10))}
+          onChange={(e) =>
+            setQuantity(
+              Math.min(product.stock, parseInt(e.target.value, 10) || 1)
+            )
+          }
           className="w-20 border rounded p-2"
         />
+        <span className="text-sm text-gray-500">{product.stock} in stock</span>
       </div>
 
+      {/* Actions */}
       <div className="flex items-center gap-4 mt-4">
         <button
           onClick={handleAddToCart}
-          disabled={adding}
-          className="bg-ogr text-white px-6 py-2 rounded hover:bg-opacity-90 transition"
+          disabled={adding || product.stock === 0}
+          className="bg-ogr text-white px-6 py-2 rounded hover:bg-opacity-90 transition disabled:opacity-50"
         >
           {adding ? "Adding…" : "Add to Cart"}
         </button>
         <button
           onClick={handleBuyNow}
-          disabled={adding}
-          className="bg-green-600 text-white px-6 py-2 rounded hover:bg-opacity-90 transition"
+          disabled={adding || product.stock === 0}
+          className="bg-green-600 text-white px-6 py-2 rounded hover:bg-opacity-90 transition disabled:opacity-50"
         >
           Buy Now
         </button>
