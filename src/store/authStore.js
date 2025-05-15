@@ -1,12 +1,13 @@
 import { create } from "zustand";
 import { jwtDecode } from "jwt-decode";
+import useCartStore from "./cartStore";
 
 const useAuthStore = create((set) => ({
   isLoggedIn: false,
   token: null,
   user: null,
   hydrated: false,
-  redirectPath: "/", // 🆕 new field to store intended page
+  redirectPath: "/", // store intended page
 
   login: (token) => {
     const decoded = jwtDecode(token);
@@ -21,6 +22,8 @@ const useAuthStore = create((set) => ({
   logout: () => {
     localStorage.removeItem("token");
     set({ isLoggedIn: false, token: null, user: null, hydrated: true });
+    // Clear cart on logout
+    useCartStore.getState().clearCart();
   },
 
   initializeAuth: () => {
@@ -38,6 +41,7 @@ const useAuthStore = create((set) => ({
     }
   },
 
-  setRedirectPath: (path) => set({ redirectPath: path }), // 🆕 new action
+  setRedirectPath: (path) => set({ redirectPath: path }),
 }));
+
 export default useAuthStore;

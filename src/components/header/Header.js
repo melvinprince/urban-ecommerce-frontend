@@ -1,37 +1,40 @@
 "use client";
 
 import { useEffect } from "react";
-import useAuthStore from "@/store/authStore";
 import Link from "next/link";
+import useAuthStore from "@/store/authStore";
+import useCartStore from "@/store/cartStore";
+import { ShoppingCart } from "lucide-react";
 
 const headerLinks = [
-  { Id: 1, text: "Home", link: "/" },
-  { Id: 2, text: "Categories", link: "/categories" },
-  { Id: 3, text: "Contact", link: "/contact" },
+  { id: 1, text: "Home", link: "/" },
+  { id: 2, text: "Categories", link: "/categories" },
+  { id: 3, text: "Contact", link: "/contact" },
 ];
 
 export default function Header() {
   const { isLoggedIn, logout, user, hydrated, initializeAuth } = useAuthStore();
+  const { totalItems, fetchCart } = useCartStore();
 
   useEffect(() => {
     initializeAuth();
-  }, [initializeAuth]);
+    fetchCart();
+  }, [initializeAuth, fetchCart]);
 
-  if (!hydrated) {
-    return null;
-  }
+  if (!hydrated) return null;
 
   return (
-    <div className="flex justify-between items-center bg-ogr p-4">
-      <div className="text-2xl">Urban Home</div>
-      <nav className="space-x-4 flex gap-4 items-center">
-        {headerLinks.map((link) => (
+    <header className="flex justify-between items-center bg-ogr p-4">
+      <div className="text-2xl font-bold text-white">Urban Home</div>
+
+      <nav className="flex items-center space-x-6">
+        {headerLinks.map(({ id, text, link }) => (
           <Link
-            key={link.Id}
-            href={link.link}
+            key={id}
+            href={link}
             className="text-lg text-sgr hover:text-white"
           >
-            {link.text}
+            {text}
           </Link>
         ))}
 
@@ -45,12 +48,11 @@ export default function Header() {
         ) : (
           <>
             {user?.name && (
-              <span className="text-lg text-sgr">
+              <Link href="/user/profile" className="text-lg text-sgr">
                 Welcome, {user.name.split(" ")[0]}
-              </span>
+              </Link>
             )}
 
-            {/* Admin Button */}
             {user?.role === "adm" && (
               <Link href="/admin" className="text-lg text-sgr hover:text-white">
                 Admin
@@ -65,7 +67,16 @@ export default function Header() {
             </button>
           </>
         )}
+
+        <Link href="/cart" className="relative text-sgr hover:text-white">
+          <ShoppingCart size={24} />
+          {totalItems > 0 && (
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center">
+              {totalItems}
+            </span>
+          )}
+        </Link>
       </nav>
-    </div>
+    </header>
   );
 }
