@@ -1,26 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import usePopupStore from "@/store/popupStore";
 
-export default function PopupAlert() {
-  const { message, type, clear } = usePopupStore();
-
-  useEffect(() => {
-    if (message) {
-      const timer = setTimeout(() => {
-        clear();
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [message, clear]);
-
+export default function PopupAlert({ type, message, onClose }) {
   if (!message) return null;
 
   const typeStyles = {
     success: "bg-green-500",
     error: "bg-red-500",
+    info: "bg-blue-500",
   };
 
   return (
@@ -35,6 +23,12 @@ export default function PopupAlert() {
         }`}
       >
         <span className="text-sm font-medium">{message}</span>
+        <button
+          onClick={onClose}
+          className="ml-4 text-white hover:opacity-80 text-lg leading-none"
+        >
+          ×
+        </button>
       </motion.div>
     </AnimatePresence>
   );

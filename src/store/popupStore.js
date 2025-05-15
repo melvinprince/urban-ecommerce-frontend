@@ -4,8 +4,10 @@ const usePopupStore = create((set) => ({
   message: "",
   type: "",
 
-  showSuccess: (message) => set({ message, type: "success" }),
-  showError: (message) => set({ message, type: "error" }),
+  showSuccess: (msg) => set({ message: msg, type: "success" }),
+  showError: (msg) => set({ message: msg, type: "error" }),
+  showInfo: (msg) => set({ message: msg, type: "info" }),
+
   clear: () => set({ message: "", type: "" }),
 }));
 

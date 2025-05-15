@@ -1,3 +1,4 @@
+import GlobalPopup from "@/components/GlobalPopup";
 import Header from "@/components/header/Header";
 import "./globals.css";
 
@@ -9,6 +10,7 @@ export default function RootLayout({ children }) {
       <body>
         <Header />
         {children}
+        <GlobalPopup />
       </body>
     </html>
   );
