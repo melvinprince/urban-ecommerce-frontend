@@ -6,7 +6,7 @@ import Link from "next/link";
 
 const headerLinks = [
   { Id: 1, text: "Home", link: "/" },
-  { Id: 2, text: "About", link: "/about" },
+  { Id: 2, text: "Categories", link: "/categories" },
   { Id: 3, text: "Contact", link: "/contact" },
 ];
 
