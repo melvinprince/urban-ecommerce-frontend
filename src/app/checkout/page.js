@@ -3,36 +3,149 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import useCartStore from "@/store/cartStore";
+import useCheckoutStore from "@/store/checkoutStore";
 
 export default function CheckoutPage() {
   const router = useRouter();
 
-  // Separate selectors to avoid inline object
-  const items = useCartStore((s) => s.items);
-  const totalItems = useCartStore((s) => s.totalItems);
-  const subtotal = useCartStore((s) => s.subtotal);
-  const isLoaded = useCartStore((s) => s.isLoaded);
-  const fetchCart = useCartStore((s) => s.fetchCart);
+  // Cart store
+  const {
+    items: cartItems,
+    subtotal,
+    totalItems,
+    isLoaded,
+    fetchCart,
+  } = useCartStore();
 
-  const [address, setAddress] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    street: "",
-    city: "",
-    postalCode: "",
-    country: "",
-  });
+  // Checkout store
+  const {
+    address,
+    setAddress,
+    paymentMethod,
+    setPaymentMethod,
+    buyNowProduct,
+    clearBuyNowProduct,
+  } = useCheckoutStore();
+
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetchCart();
   }, [fetchCart]);
 
-  if (!isLoaded) {
-    return <div className="p-6 text-center">Loading checkout…</div>;
-  }
+  const handleChange = (e) => {
+    setAddress({ ...address, [e.target.name]: e.target.value });
+  };
 
-  if (items.length === 0) {
+  const handlePlaceOrder = async () => {
+    setError("");
+
+    const hasAddress = Object.values(address).every((v) => v.trim() !== "");
+    const hasItems = buyNowProduct || (cartItems && cartItems.length > 0);
+    const hasPayment = !!paymentMethod;
+
+    if (!hasAddress || !hasItems || !hasPayment) {
+      setError("Please complete all fields and select a payment method.");
+      return;
+    }
+
+    try {
+      const items = [];
+
+      if (buyNowProduct) {
+        const { product, quantity, size, color } = buyNowProduct;
+        items.push({
+          product: product._id,
+          quantity,
+          size,
+          color,
+          price: product.discountPrice ?? product.price,
+        });
+      } else {
+        for (const item of cartItems) {
+          items.push({
+            product: item.product._id,
+            quantity: item.quantity,
+            size: item.size,
+            color: item.color,
+            price: item.product.discountPrice ?? item.product.price,
+          });
+        }
+      }
+
+      const totalAmount = items.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+      );
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/orders`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            // Optionally: include auth token if required
+          },
+          body: JSON.stringify({
+            items,
+            address,
+            paymentMethod,
+            isPaid: paymentMethod === "paypal",
+            totalAmount,
+          }),
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to place order.");
+
+      // ✅ Success
+      if (buyNowProduct) clearBuyNowProduct();
+      else useCartStore.getState().clearCart(); // assuming you have this
+
+      router.push(`/order/confirmation?id=${data.data._id}`);
+    } catch (err) {
+      setError(err.message || "Something went wrong during order placement.");
+    }
+  };
+
+  const renderItems = () => {
+    if (buyNowProduct) {
+      const { product, quantity, size, color } = buyNowProduct;
+      return (
+        <div className="border p-2 rounded">
+          <div className="font-medium">{product.title}</div>
+          <div className="text-sm text-gray-600">
+            {size && <>Size: {size} • </>}
+            {color && <>Color: {color} • </>}
+            Qty: {quantity}
+          </div>
+          <div className="font-bold text-green-700 mt-1">
+            {(product.discountPrice ?? product.price).toFixed(2)} QAR
+          </div>
+        </div>
+      );
+    }
+
+    return cartItems.map((item) => (
+      <div key={item._id} className="border p-2 rounded">
+        <div className="font-medium">{item.product.title}</div>
+        <div className="text-sm text-gray-600">
+          {item.size && <>Size: {item.size} • </>}
+          {item.color && <>Color: {item.color} • </>}
+          Qty: {item.quantity}
+        </div>
+        <div className="font-bold text-green-700 mt-1">
+          {(item.product.discountPrice ?? item.product.price).toFixed(2)} QAR
+        </div>
+      </div>
+    ));
+  };
+
+  if (!isLoaded)
+    return <div className="p-6 text-center">Loading checkout…</div>;
+
+  if (!buyNowProduct && cartItems.length === 0) {
     return (
       <div className="p-6 text-center">
         <p>Your cart is empty.</p>
@@ -46,19 +159,11 @@ export default function CheckoutPage() {
     );
   }
 
-  const handleChange = (e) => {
-    setAddress((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const handlePlaceOrder = () => {
-    // TODO: call your order API, then:
-    router.push("/order/confirmation");
-  };
-
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-8">
       <h1 className="text-3xl font-bold">Checkout</h1>
 
+      {/* Address Form */}
       <section className="border p-4 rounded">
         <h2 className="font-semibold mb-4">Shipping Information</h2>
         <div className="grid grid-cols-1 gap-4">
@@ -85,17 +190,53 @@ export default function CheckoutPage() {
         </div>
       </section>
 
-      <section className="border p-4 rounded">
+      {/* Order Items */}
+      <section className="border p-4 rounded space-y-2">
         <h2 className="font-semibold mb-4">Order Summary</h2>
-        <div className="space-y-2">
-          <div className="flex justify-between">
-            <span>Items ({totalItems})</span>
-            <span>{subtotal.toFixed(2)} QAR</span>
-          </div>
-          {/* List items here if desired */}
+        {renderItems()}
+        <div className="flex justify-between font-semibold mt-4 pt-2 border-t">
+          <span>Subtotal:</span>
+          <span>
+            {buyNowProduct
+              ? (
+                  (buyNowProduct.product.discountPrice ??
+                    buyNowProduct.product.price) * buyNowProduct.quantity
+                ).toFixed(2)
+              : subtotal.toFixed(2)}{" "}
+            QAR
+          </span>
         </div>
       </section>
 
+      {/* Payment Method */}
+      <section className="border p-4 rounded">
+        <h2 className="font-semibold mb-4">Payment Method</h2>
+        <div className="flex flex-col gap-2">
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="payment"
+              value="paypal"
+              checked={paymentMethod === "paypal"}
+              onChange={() => setPaymentMethod("paypal")}
+            />
+            Pay with PayPal
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="payment"
+              value="cod"
+              checked={paymentMethod === "cod"}
+              onChange={() => setPaymentMethod("cod")}
+            />
+            Cash on Delivery
+          </label>
+        </div>
+      </section>
+
+      {/* Error / Action */}
+      {error && <p className="text-red-500">{error}</p>}
       <button
         onClick={handlePlaceOrder}
         className="w-full bg-ogr text-white py-3 rounded hover:bg-opacity-90 transition"
