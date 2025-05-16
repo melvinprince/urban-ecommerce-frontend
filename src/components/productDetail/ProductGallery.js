@@ -1,5 +1,3 @@
-"use client";
-
 export default function ProductGallery({ images }) {
   if (!images || images.length === 0) {
     return (
