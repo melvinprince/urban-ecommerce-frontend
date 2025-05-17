@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import useCartStore from "@/store/cartStore";
 import useCheckoutStore from "@/store/checkoutStore";
+import PayPalButton from "@/components/checkout/PaypalButton";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -238,11 +239,82 @@ export default function CheckoutPage() {
       {/* Error / Action */}
       {error && <p className="text-red-500">{error}</p>}
       <button
-        onClick={handlePlaceOrder}
-        className="w-full bg-ogr text-white py-3 rounded hover:bg-opacity-90 transition"
+        onClick={paymentMethod === "paypal" ? undefined : handlePlaceOrder}
+        disabled={paymentMethod === "paypal"}
+        className="w-full bg-ogr text-white py-3 rounded hover:bg-opacity-90 transition disabled:opacity-50"
       >
-        Place Order
+        {paymentMethod === "paypal"
+          ? "Please use the PayPal button below"
+          : "Place Order"}
       </button>
+      {paymentMethod === "paypal" && (
+        <PayPalButton
+          amount={
+            buyNowProduct
+              ? (buyNowProduct.product.discountPrice ??
+                  buyNowProduct.product.price) * buyNowProduct.quantity
+              : subtotal
+          }
+          onSuccess={async () => {
+            try {
+              const items = [];
+
+              if (buyNowProduct) {
+                const { product, quantity, size, color } = buyNowProduct;
+                items.push({
+                  product: product._id,
+                  quantity,
+                  size,
+                  color,
+                  price: product.discountPrice ?? product.price,
+                });
+              } else {
+                for (const item of cartItems) {
+                  items.push({
+                    product: item.product._id,
+                    quantity: item.quantity,
+                    size: item.size,
+                    color: item.color,
+                    price: item.product.discountPrice ?? item.product.price,
+                  });
+                }
+              }
+
+              const totalAmount = items.reduce(
+                (sum, item) => sum + item.price * item.quantity,
+                0
+              );
+
+              const res = await fetch(
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/orders`,
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    items,
+                    address,
+                    paymentMethod: "paypal",
+                    isPaid: true,
+                    totalAmount,
+                  }),
+                }
+              );
+
+              const data = await res.json();
+              if (!res.ok)
+                throw new Error(data.message || "Failed to place order");
+
+              if (buyNowProduct) clearBuyNowProduct();
+              else useCartStore.getState().clearCart();
+
+              router.push(`/order/confirmation?id=${data.data._id}`);
+            } catch (err) {
+              setError(err.message);
+            }
+          }}
+          onError={(err) => setError("PayPal checkout failed.")}
+        />
+      )}
     </div>
   );
 }
