@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import useCartStore from "@/store/cartStore";
+import useCheckoutStore from "@/store/checkoutStore";
 
 export default function OrderConfirmationPage() {
   const searchParams = useSearchParams();
@@ -10,6 +12,10 @@ export default function OrderConfirmationPage() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [cartCleared, setCartCleared] = useState(false);
+
+  const clearCart = useCartStore((s) => s.clearCart);
+  const { buyNowProduct, fromBuyNow, clearBuyNowProduct } = useCheckoutStore();
 
   useEffect(() => {
     async function fetchOrder() {
@@ -28,6 +34,15 @@ export default function OrderConfirmationPage() {
         if (!res.ok) throw new Error(json.message || "Failed to fetch order");
 
         setOrder(json.data);
+
+        // ✅ Clear cart only if it's NOT a Buy Now checkout
+        if (!fromBuyNow && !cartCleared) {
+          clearCart();
+          setCartCleared(true);
+        }
+
+        // ✅ Always clean up Buy Now state
+        clearBuyNowProduct();
       } catch (err) {
         setError(err.message);
       } finally {
@@ -36,7 +51,7 @@ export default function OrderConfirmationPage() {
     }
 
     fetchOrder();
-  }, [orderId]);
+  }, [orderId, cartCleared, clearCart, fromBuyNow, clearBuyNowProduct]);
 
   if (loading)
     return <div className="p-6 text-center">Loading order details…</div>;

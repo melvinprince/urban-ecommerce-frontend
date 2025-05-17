@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Heart, HeartOff } from "lucide-react";
 import useCartStore from "@/store/cartStore";
 import useWishlistStore from "@/store/wishlistStore";
+import useCheckoutStore from "@/store/checkoutStore";
 
 export default function ProductInfo({ product }) {
   const router = useRouter();
@@ -12,6 +13,7 @@ export default function ProductInfo({ product }) {
   const wishlistItems = useWishlistStore((s) => s.items);
   const addToWishlist = useWishlistStore((s) => s.addItem);
   const removeFromWishlist = useWishlistStore((s) => s.removeItem);
+  const setBuyNowProduct = useCheckoutStore((s) => s.setBuyNowProduct);
 
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState("");
@@ -21,13 +23,8 @@ export default function ProductInfo({ product }) {
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   useEffect(() => {
-    // initialize defaults only if available
-    if (product.sizes?.length > 0) {
-      setSelectedSize(product.sizes[0]);
-    }
-    if (product.colors?.length > 0) {
-      setSelectedColor(product.colors[0]);
-    }
+    if (product.sizes?.length > 0) setSelectedSize(product.sizes[0]);
+    if (product.colors?.length > 0) setSelectedColor(product.colors[0]);
   }, [product.sizes, product.colors]);
 
   useEffect(() => {
@@ -52,7 +49,13 @@ export default function ProductInfo({ product }) {
 
   const handleBuyNow = async () => {
     await handleAddToCart();
-    router.push("/cart");
+    setBuyNowProduct({
+      ...product,
+      quantity,
+      size: selectedSize,
+      color: selectedColor,
+    });
+    router.push("/checkout");
   };
 
   const toggleWishlist = async () => {
@@ -98,7 +101,6 @@ export default function ProductInfo({ product }) {
           <select
             value={selectedSize}
             onChange={(e) => setSelectedSize(e.target.value)}
-            disabled={product.sizes.length === 0}
             className="border rounded p-2"
           >
             {product.sizes.map((sz) => (
@@ -117,7 +119,6 @@ export default function ProductInfo({ product }) {
           <select
             value={selectedColor}
             onChange={(e) => setSelectedColor(e.target.value)}
-            disabled={product.colors.length === 0}
             className="border rounded p-2"
           >
             {product.colors.map((cl) => (

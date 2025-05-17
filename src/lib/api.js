@@ -65,6 +65,7 @@ export const addOrUpdateCartItem = (item) => api.post("/api/cart", item);
 export const removeCartItem = (itemId) => api.delete(`/api/cart/${itemId}`);
 export const updateCartItem = (itemId, item) =>
   api.put(`/api/cart/${itemId}`, item);
+export const clearCartServerSide = () => api.delete("/api/cart/clear");
 
 // Wishlist (Protected)
 export const getWishlist = () => api.get("/api/wishlist");
@@ -72,5 +73,8 @@ export const addToWishlist = (product) => api.post("/api/wishlist", product);
 export const removeFromWishlist = (itemId) =>
   api.delete(`/api/wishlist/${itemId}`);
 export const clearWishlist = () => api.post("/api/wishlist/clear");
+
+// Orders
+export const placeOrder = (payload) => api.post("/api/orders", payload);
 
 export default api;

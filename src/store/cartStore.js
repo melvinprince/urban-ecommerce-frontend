@@ -4,6 +4,7 @@ import {
   addOrUpdateCartItem,
   removeCartItem,
   updateCartItem,
+  clearCartServerSide,
 } from "@/lib/api";
 import useAuthStore from "./authStore";
 
@@ -159,17 +160,36 @@ const useCartStore = create((set, get) => {
       }
     },
 
-    clearCart: () => {
+    clearCart: async () => {
       console.log("[CartStore] Clearing cart");
-      set({
-        items: [],
-        totalItems: 0,
-        subtotal: 0,
-        isLoaded: true,
-        error: null,
-      });
+
+      if (isLoggedIn()) {
+        try {
+          const { data } = await clearCartServerSide(); // get updated empty cart
+          console.log("[CartStore] Server-side cart cleared");
+
+          set({
+            items: data.items,
+            totalItems: data.totalItems,
+            subtotal: data.subtotal,
+            isLoaded: true,
+            error: null,
+          });
+        } catch (err) {
+          console.error("[CartStore] Server cart clear failed:", err.message);
+        }
+      } else {
+        set({
+          items: [],
+          totalItems: 0,
+          subtotal: 0,
+          isLoaded: true,
+          error: null,
+        });
+      }
+
       localStorage.removeItem("cart");
-      console.log("[CartStore] Cart cleared from localStorage");
+      console.log("[CartStore] Local cart cleared");
     },
   };
 });

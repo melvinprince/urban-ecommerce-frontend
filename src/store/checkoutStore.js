@@ -15,11 +15,13 @@ const useCheckoutStore = create(
       },
       paymentMethod: "",
       buyNowProduct: null,
+      fromBuyNow: false, // ✅ NEW FLAG
 
       setAddress: (address) => set({ address }),
       setPaymentMethod: (method) => set({ paymentMethod: method }),
-      setBuyNowProduct: (product) => set({ buyNowProduct: product }),
-      clearBuyNowProduct: () => set({ buyNowProduct: null }),
+      setBuyNowProduct: (product) =>
+        set({ buyNowProduct: product, fromBuyNow: true }), // ✅ SET FLAG
+      clearBuyNowProduct: () => set({ buyNowProduct: null, fromBuyNow: false }), // ✅ CLEAR FLAG
       clearCheckout: () =>
         set({
           address: {
@@ -33,6 +35,7 @@ const useCheckoutStore = create(
           },
           paymentMethod: "",
           buyNowProduct: null,
+          fromBuyNow: false, // ✅ RESET FLAG
         }),
     }),
     {
