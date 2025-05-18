@@ -65,7 +65,7 @@ export default function OrderConfirmationPage() {
         🎉 Thank you for your order!
       </h1>
       <div className="text-center text-gray-600">
-        Order ID: <strong>{order._id}</strong>
+        Order ID: <strong>{order.customOrderId}</strong>
         <br />
         Placed on: {new Date(order.createdAt).toLocaleString()}
       </div>

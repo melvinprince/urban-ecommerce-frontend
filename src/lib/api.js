@@ -81,4 +81,18 @@ export const createPaypalOrder = (totalAmount) =>
 export const capturePaypalOrder = async (orderId) =>
   api.post(`/api/paypal/capture/${orderId}`);
 
+//Fetch all orders
+export const getMyOrders = async () => {
+  const res = await api.get("/api/orders/my-orders");
+  return res.data;
+};
+export const getOrderById = async (id) => {
+  const res = await api.get(`/api/orders/${id}`);
+  return res.data;
+};
+export const getOrderByCustomId = async (customId) => {
+  const res = await api.get(`/api/orders/by-custom/${customId}`);
+  return res.data;
+};
+
 export default api;
