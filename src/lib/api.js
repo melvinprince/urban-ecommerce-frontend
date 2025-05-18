@@ -99,4 +99,18 @@ export const getOrdersByEmail = async (email) => {
   return res.data; // array of orders
 };
 
+// Cancel order by customOrderId (auth required)
+export const cancelOrder = async (customOrderId) => {
+  const res = await api.patch(`/api/orders/${customOrderId}/cancel`);
+  return res.data;
+};
+// Cancel order as guest (no auth)
+export const cancelOrderAsGuest = async ({ customOrderId, email }) => {
+  const res = await api.patch("/api/orders/cancel-guest", {
+    customOrderId,
+    email,
+  });
+  return res.data;
+};
+
 export default api;

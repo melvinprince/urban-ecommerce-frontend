@@ -2,16 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { getOrderByCustomId } from "@/lib/api";
 import Loader from "@/components/common/Loader";
 import usePopupStore from "@/store/popupStore";
 import InvoiceDownloadButton from "../invoice/InvoiceDownloadButton";
+import { cancelOrder, cancelOrderAsGuest, getOrderByCustomId } from "@/lib/api";
+import useAuthStore from "@/store/authStore"; // Assuming you have this
 
 export default function OrderDetailPage() {
   const { id } = useParams(); // customOrderId
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { showError } = usePopupStore();
+  const { showError, showSuccess } = usePopupStore();
+
+  const auth = useAuthStore();
 
   useEffect(() => {
     async function fetchOrder() {
@@ -27,6 +30,37 @@ export default function OrderDetailPage() {
 
     if (id) fetchOrder();
   }, [id, showError]);
+
+  async function handleCancelOrder() {
+    const confirmed = window.confirm(
+      "Are you sure you want to cancel this order?"
+    );
+    if (!confirmed) return;
+
+    try {
+      if (auth?.isLoggedIn) {
+        // Logged-in user
+        const updated = await cancelOrder(order.customOrderId);
+        showSuccess("Order cancelled successfully");
+        setOrder(updated);
+      } else {
+        // Guest user: ask for email
+        const email = prompt("Please enter the email used during checkout:");
+        if (!email || !email.trim())
+          return showError("Email is required to cancel the order.");
+
+        const updated = await cancelOrderAsGuest({
+          customOrderId: order.customOrderId,
+          email: email.trim(),
+        });
+
+        showSuccess("Order cancelled successfully");
+        setOrder(updated);
+      }
+    } catch (err) {
+      showError(err.message);
+    }
+  }
 
   if (loading) return <Loader />;
   if (!order)
@@ -91,6 +125,14 @@ export default function OrderDetailPage() {
       <div className="mt-4">
         <InvoiceDownloadButton order={order} />
       </div>
+      {order.canModify && (
+        <button
+          onClick={handleCancelOrder}
+          className="bg-red-600 text-white px-4 py-2 rounded mt-4"
+        >
+          Cancel Order
+        </button>
+      )}
     </div>
   );
 }
