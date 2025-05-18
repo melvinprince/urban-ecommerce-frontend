@@ -113,4 +113,13 @@ export const cancelOrderAsGuest = async ({ customOrderId, email }) => {
   return res.data;
 };
 
+// Address (Protected)
+export const getUserAddresses = () => api.get("/api/user/addresses");
+export const addUserAddress = (address) =>
+  api.post("/api/user/addresses", { address });
+export const updateUserAddress = (index, address) =>
+  api.put(`/api/user/addresses/${index}`, { address });
+export const deleteUserAddress = (index) =>
+  api.delete(`/api/user/addresses/${index}`);
+
 export default api;

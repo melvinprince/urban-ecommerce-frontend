@@ -2,16 +2,23 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+
 import useCartStore from "@/store/cartStore";
 import useCheckoutStore from "@/store/checkoutStore";
+import useAuthStore from "@/store/authStore";
+
 import PayPalButton from "@/components/checkout/PaypalButton";
 import ShippingForm from "@/components/checkout/ShippingForm";
 import OrderItems from "@/components/checkout/OrderItems";
 import PaymentMethod from "@/components/checkout/PaymentMethod";
+import AddressSelector from "@/components/user/AddressSelector";
+
 import { placeOrder } from "@/lib/api";
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const auth = useAuthStore();
+
   const {
     items: cartItems,
     subtotal,
@@ -65,7 +72,19 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = async () => {
     setError("");
-    const hasAddress = Object.values(address).every((v) => v.trim() !== "");
+    const requiredFields = [
+      "fullName",
+      "email",
+      "phone",
+      "street",
+      "city",
+      "postalCode",
+      "country",
+    ];
+    const hasAddress = requiredFields.every(
+      (key) => typeof address[key] === "string" && address[key].trim() !== ""
+    );
+
     const hasItems = buyNowProduct || (cartItems && cartItems.length > 0);
     const hasPayment = !!paymentMethod;
 
@@ -119,7 +138,12 @@ export default function CheckoutPage() {
     <div className="max-w-3xl mx-auto p-6 space-y-8">
       <h1 className="text-3xl font-bold">Checkout</h1>
 
-      <ShippingForm address={address} onChange={handleChange} />
+      {auth?.isLoggedIn ? (
+        <AddressSelector address={address} setAddress={setAddress} />
+      ) : (
+        <ShippingForm address={address} onChange={handleChange} />
+      )}
+
       <OrderItems
         cartItems={cartItems}
         buyNowProduct={buyNowProduct}
