@@ -94,5 +94,9 @@ export const getOrderByCustomId = async (customId) => {
   const res = await api.get(`/api/orders/by-custom/${customId}`);
   return res.data;
 };
+export const getOrdersByEmail = async (email) => {
+  const res = await api.get(`/api/orders/email/${email}`);
+  return res.data; // array of orders
+};
 
 export default api;

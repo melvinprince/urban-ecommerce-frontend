@@ -10,6 +10,7 @@ const headerLinks = [
   { id: 1, text: "Home", link: "/" },
   { id: 2, text: "Categories", link: "/categories" },
   { id: 3, text: "Contact", link: "/contact" },
+  { id: 4, text: "Help", link: "/help" },
 ];
 
 export default function Header() {
@@ -27,7 +28,7 @@ export default function Header() {
     <header className="flex justify-between items-center bg-ogr p-4">
       <div className="text-2xl font-bold text-white">Urban Home</div>
 
-      <nav className="flex items-center space-x-6">
+      <nav className="flex items-center gap-[2rem]">
         {headerLinks.map(({ id, text, link }) => (
           <Link
             key={id}
