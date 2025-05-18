@@ -1,7 +1,8 @@
 "use client";
 
 import { PayPalButtons } from "@paypal/react-paypal-js";
-import { convertToUSD } from "@/lib/helpers"; // Make sure this path is correct
+import { convertToUSD } from "@/lib/helpers";
+import { createPaypalOrder, capturePaypalOrder } from "@/lib/api";
 
 export default function PayPalButton({ amount, onSuccess, onError }) {
   const usdAmount = convertToUSD(amount); // Convert QAR to USD
@@ -15,31 +16,28 @@ export default function PayPalButton({ amount, onSuccess, onError }) {
           shape: "rect",
           label: "paypal",
         }}
-        createOrder={(_, actions) => {
-          return actions.order.create({
-            purchase_units: [
-              {
-                amount: {
-                  value: usdAmount, // Converted to USD string
-                  currency_code: "USD",
-                },
-              },
-            ],
-          });
-        }}
-        onApprove={async (data, actions) => {
+        createOrder={async () => {
           try {
-            const details = await actions.order.capture();
-            console.log("✅ PayPal Payment Captured:", details);
-            onSuccess(details);
+            const res = await createPaypalOrder(usdAmount); // res = { data: { id: "..." } }
+            return res.data.id; // ✅ This should return the PayPal order ID
           } catch (err) {
-            console.error("❌ Error during capture:", err);
-            onError(err);
+            console.error("❌ Failed to create PayPal order:", err.message);
+            onError?.(err);
+          }
+        }}
+        onApprove={async (data) => {
+          try {
+            const captureResult = await capturePaypalOrder(data.orderID);
+            console.log("✅ PayPal Payment Captured:", captureResult);
+            onSuccess?.(captureResult); // Call order placement logic
+          } catch (err) {
+            console.error("❌ Failed to capture PayPal order:", err.message);
+            onError?.(err);
           }
         }}
         onError={(err) => {
-          console.error("❌ PayPal Error:", err);
-          onError(err);
+          console.error("❌ PayPal Button Error:", err);
+          onError?.(err);
         }}
       />
     </div>

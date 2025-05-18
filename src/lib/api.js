@@ -76,5 +76,9 @@ export const clearWishlist = () => api.post("/api/wishlist/clear");
 
 // Orders
 export const placeOrder = (payload) => api.post("/api/orders", payload);
+export const createPaypalOrder = (totalAmount) =>
+  api.post("/api/paypal/create", { totalAmount }); // totalAmount is number or string, fine.
+export const capturePaypalOrder = async (orderId) =>
+  api.post(`/api/paypal/capture/${orderId}`);
 
 export default api;
