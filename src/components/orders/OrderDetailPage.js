@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { getOrderByCustomId } from "@/lib/api";
 import Loader from "@/components/common/Loader";
 import usePopupStore from "@/store/popupStore";
+import InvoiceDownloadButton from "../invoice/InvoiceDownloadButton";
 
 export default function OrderDetailPage() {
   const { id } = useParams(); // customOrderId
@@ -86,6 +87,9 @@ export default function OrderDetailPage() {
 
       <div className="mt-6 text-right font-semibold">
         Total: QAR {order.totalAmount}
+      </div>
+      <div className="mt-4">
+        <InvoiceDownloadButton order={order} />
       </div>
     </div>
   );

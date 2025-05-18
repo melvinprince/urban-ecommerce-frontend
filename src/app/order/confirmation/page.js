@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import useCartStore from "@/store/cartStore";
 import useCheckoutStore from "@/store/checkoutStore";
+import InvoiceDownloadButton from "@/components/invoice/InvoiceDownloadButton";
 
 export default function OrderConfirmationPage() {
   const searchParams = useSearchParams();
@@ -118,6 +119,7 @@ export default function OrderConfirmationPage() {
           ))}
         </ul>
       </section>
+      <InvoiceDownloadButton order={order} />
     </div>
   );
 }
