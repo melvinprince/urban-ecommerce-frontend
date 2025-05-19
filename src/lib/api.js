@@ -126,4 +126,23 @@ export const deleteUserAddress = (index) =>
 export const editOrder = async (customOrderId, data) =>
   api.patch(`/api/orders/edit/${customOrderId}`, data);
 
+// Support Tickets (Protected)
+export const createTicket = (formData) =>
+  api.post("/api/tickets", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
+export const getMyTickets = async () => {
+  const res = await api.get("/api/tickets/my-tickets");
+  return res.data; // ✅ Just return the ticket array
+};
+export const getTicketById = async (id) => {
+  const res = await api.get(`/api/tickets/${id}`);
+  return res.data; // ✅ Just return the ticket object
+};
+export const replyToTicket = (id, formData) =>
+  api.patch(`/api/tickets/${id}/reply`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
 export default api;
