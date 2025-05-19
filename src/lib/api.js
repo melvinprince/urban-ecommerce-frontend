@@ -122,4 +122,8 @@ export const updateUserAddress = (index, address) =>
 export const deleteUserAddress = (index) =>
   api.delete(`/api/user/addresses/${index}`);
 
+//edit Order
+export const editOrder = async (customOrderId, data) =>
+  api.patch(`/api/orders/edit/${customOrderId}`, data);
+
 export default api;

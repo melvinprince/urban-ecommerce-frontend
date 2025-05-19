@@ -5,15 +5,17 @@ import { useParams } from "next/navigation";
 import Loader from "@/components/common/Loader";
 import usePopupStore from "@/store/popupStore";
 import InvoiceDownloadButton from "../invoice/InvoiceDownloadButton";
+import EditOrderFormModal from "@/components/orders/EditOrderFormModal";
 import { cancelOrder, cancelOrderAsGuest, getOrderByCustomId } from "@/lib/api";
-import useAuthStore from "@/store/authStore"; // Assuming you have this
+import useAuthStore from "@/store/authStore";
 
 export default function OrderDetailPage() {
   const { id } = useParams(); // customOrderId
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { showError, showSuccess } = usePopupStore();
+  const [showEditForm, setShowEditForm] = useState(false);
 
+  const { showError, showSuccess } = usePopupStore();
   const auth = useAuthStore();
 
   useEffect(() => {
@@ -39,12 +41,10 @@ export default function OrderDetailPage() {
 
     try {
       if (auth?.isLoggedIn) {
-        // Logged-in user
         const updated = await cancelOrder(order.customOrderId);
         showSuccess("Order cancelled successfully");
         setOrder(updated);
       } else {
-        // Guest user: ask for email
         const email = prompt("Please enter the email used during checkout:");
         if (!email || !email.trim())
           return showError("Email is required to cancel the order.");
@@ -71,6 +71,7 @@ export default function OrderDetailPage() {
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Order Details</h1>
+
       <div className="mb-4">
         <p>
           <strong>Order ID:</strong> {order.customOrderId}
@@ -87,14 +88,15 @@ export default function OrderDetailPage() {
 
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-2">Shipping Address</h2>
-        <p>{order.address.fullName}</p>
+        <p>{order.address?.fullName}</p>
         <p>
-          {order.address.street}, {order.address.city}
+          {order.address?.street}, {order.address?.city}
         </p>
         <p>
-          {order.address.country} - {order.address.postalCode}
+          {order.address?.country} - {order.address?.postalCode}
         </p>
-        <p>📞 {order.address.phone}</p>
+        <p>📧 {order.address?.email}</p>
+        <p>📞 {order.address?.phone}</p>
       </div>
 
       <div>
@@ -122,16 +124,35 @@ export default function OrderDetailPage() {
       <div className="mt-6 text-right font-semibold">
         Total: QAR {order.totalAmount}
       </div>
-      <div className="mt-4">
+
+      <div className="mt-4 flex flex-col gap-3">
         <InvoiceDownloadButton order={order} />
+
+        {order.canModify && (
+          <>
+            <button
+              onClick={handleCancelOrder}
+              className="bg-red-600 text-white px-4 py-2 rounded"
+            >
+              Cancel Order
+            </button>
+
+            <button
+              onClick={() => setShowEditForm(true)}
+              className="bg-blue-600 text-white px-4 py-2 rounded"
+            >
+              ✏️ Edit Order Details
+            </button>
+          </>
+        )}
       </div>
-      {order.canModify && (
-        <button
-          onClick={handleCancelOrder}
-          className="bg-red-600 text-white px-4 py-2 rounded mt-4"
-        >
-          Cancel Order
-        </button>
+
+      {showEditForm && (
+        <EditOrderFormModal
+          order={order}
+          onClose={() => setShowEditForm(false)}
+          onSuccess={(updated) => setOrder(updated?.data || updated)}
+        />
       )}
     </div>
   );
