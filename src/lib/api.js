@@ -145,4 +145,22 @@ export const replyToTicket = (id, formData) =>
     headers: { "Content-Type": "multipart/form-data" },
   });
 
+export const getReviewsForProduct = (productId) => {
+  console.log(`[API] 📤 Requesting reviews for product: ${productId}`);
+  return api
+    .get(`/api/reviews/${productId}`)
+    .then((res) => {
+      console.log(`[API] ✅ Received ${res.data?.length || 0} reviews`);
+      console.log(res);
+      return res.data;
+    })
+    .catch((err) => {
+      console.error("[API] ❌ Failed to fetch reviews:", err.message || err);
+      throw err;
+    });
+};
+
+export const submitReview = (payload) =>
+  api.post("/api/reviews", payload).then((res) => res.data);
+
 export default api;

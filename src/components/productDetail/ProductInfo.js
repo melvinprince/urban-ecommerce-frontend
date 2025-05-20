@@ -6,6 +6,7 @@ import { Heart, HeartOff } from "lucide-react";
 import useCartStore from "@/store/cartStore";
 import useWishlistStore from "@/store/wishlistStore";
 import useCheckoutStore from "@/store/checkoutStore";
+import ReviewsSection from "./ReviewSection";
 
 export default function ProductInfo({ product }) {
   const router = useRouter();
@@ -184,6 +185,7 @@ export default function ProductInfo({ product }) {
           {product.stock > 0 ? `${product.stock} available` : "Out of stock"}
         </p>
       </div>
+      <ReviewsSection productId={product._id} />
     </div>
   );
 }
