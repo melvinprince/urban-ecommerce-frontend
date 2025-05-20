@@ -1,8 +1,24 @@
 "use client";
+
+import useCheckoutStore from "@/store/checkoutStore";
+
 export default function OrderItems({ cartItems, buyNowProduct, subtotal }) {
+  const { coupon } = useCheckoutStore();
+
+  // Calculate base total
+  const baseTotal = buyNowProduct
+    ? (buyNowProduct.discountPrice ?? buyNowProduct.price) *
+      buyNowProduct.quantity
+    : subtotal;
+
+  // Apply discount if any
+  const discount = coupon?.discount || 0;
+  const newTotal = baseTotal - discount;
+
   return (
     <section className="border p-4 rounded space-y-2">
       <h2 className="font-semibold mb-4">Order Summary</h2>
+
       {buyNowProduct ? (
         <div className="border p-2 rounded">
           <div className="font-medium">{buyNowProduct.title}</div>
@@ -32,18 +48,28 @@ export default function OrderItems({ cartItems, buyNowProduct, subtotal }) {
           </div>
         ))
       )}
+
+      {/* Subtotal */}
       <div className="flex justify-between font-semibold mt-4 pt-2 border-t">
         <span>Subtotal:</span>
-        <span>
-          {buyNowProduct
-            ? (
-                (buyNowProduct.discountPrice ?? buyNowProduct.price) *
-                buyNowProduct.quantity
-              ).toFixed(2)
-            : subtotal.toFixed(2)}{" "}
-          QAR
-        </span>
+        <span>{baseTotal.toFixed(2)} QAR</span>
       </div>
+
+      {/* Discount, if applied */}
+      {coupon && (
+        <div className="flex justify-between text-green-700">
+          <span>Discount ({coupon.code}):</span>
+          <span>- {discount.toFixed(2)} QAR</span>
+        </div>
+      )}
+
+      {/* New Total */}
+      {coupon && (
+        <div className="flex justify-between font-bold">
+          <span>Total after discount:</span>
+          <span>{newTotal.toFixed(2)} QAR</span>
+        </div>
+      )}
     </section>
   );
 }

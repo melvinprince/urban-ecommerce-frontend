@@ -1,9 +1,11 @@
+// frontend/src/store/checkoutStore.js
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { applyCoupon as apiApplyCoupon } from "@/lib/api";
 
 const useCheckoutStore = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       address: {
         fullName: "",
         email: "",
@@ -15,13 +17,17 @@ const useCheckoutStore = create(
       },
       paymentMethod: "",
       buyNowProduct: null,
-      fromBuyNow: false, // ✅ NEW FLAG
+      fromBuyNow: false,
+
+      subtotal: 0,
+      coupon: null,
+      error: null,
 
       setAddress: (address) => set({ address }),
       setPaymentMethod: (method) => set({ paymentMethod: method }),
       setBuyNowProduct: (product) =>
-        set({ buyNowProduct: product, fromBuyNow: true }), // ✅ SET FLAG
-      clearBuyNowProduct: () => set({ buyNowProduct: null, fromBuyNow: false }), // ✅ CLEAR FLAG
+        set({ buyNowProduct: product, fromBuyNow: true }),
+      clearBuyNowProduct: () => set({ buyNowProduct: null, fromBuyNow: false }),
       clearCheckout: () =>
         set({
           address: {
@@ -35,8 +41,28 @@ const useCheckoutStore = create(
           },
           paymentMethod: "",
           buyNowProduct: null,
-          fromBuyNow: false, // ✅ RESET FLAG
+          fromBuyNow: false,
+          subtotal: 0,
+          coupon: null,
+          error: null,
         }),
+
+      setSubtotal: (amount) => set({ subtotal: amount }),
+
+      // use the named export from lib/api.js
+      applyCoupon: async (code) => {
+        try {
+          const res = await apiApplyCoupon(code, get().subtotal);
+          // res is { success, message, data: { code, type, value, discount } }
+          set({ coupon: res.data, error: null });
+        } catch (err) {
+          set({
+            error:
+              err.response?.message || err.message || "Failed to apply coupon.",
+          });
+        }
+      },
+      clearCoupon: () => set({ coupon: null, error: null }),
     }),
     {
       name: "checkout-storage", // persisted in localStorage

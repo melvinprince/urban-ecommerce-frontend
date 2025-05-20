@@ -11,6 +11,7 @@ import PayPalButton from "@/components/checkout/PaypalButton";
 import ShippingForm from "@/components/checkout/ShippingForm";
 import OrderItems from "@/components/checkout/OrderItems";
 import PaymentMethod from "@/components/checkout/PaymentMethod";
+import CouponInput from "@/components/checkout/CouponInput";
 import AddressSelector from "@/components/user/AddressSelector";
 
 import { placeOrder } from "@/lib/api";
@@ -35,13 +36,22 @@ export default function CheckoutPage() {
     setPaymentMethod,
     buyNowProduct,
     clearBuyNowProduct,
+    setSubtotal,
+    coupon,
+    clearCoupon,
   } = useCheckoutStore();
 
   const [error, setError] = useState("");
 
+  // Fetch cart on mount
   useEffect(() => {
     fetchCart();
   }, [fetchCart]);
+
+  // Sync cart subtotal to checkout store
+  useEffect(() => {
+    setSubtotal(subtotal);
+  }, [subtotal, setSubtotal]);
 
   const handleChange = (e) => {
     setAddress({ ...address, [e.target.name]: e.target.value });
@@ -99,17 +109,23 @@ export default function CheckoutPage() {
         (sum, item) => sum + item.price * item.quantity,
         0
       );
+      const discount = coupon?.discount || 0;
+      const finalAmount = totalAmount - discount;
 
       const data = await placeOrder({
         items,
         address,
         paymentMethod,
         isPaid: paymentMethod === "paypal",
-        totalAmount,
+        totalAmount: finalAmount,
+        couponCode: coupon?.code,
       });
 
       if (buyNowProduct) clearBuyNowProduct();
-      else await clearCart();
+      else {
+        await clearCart();
+        clearCoupon();
+      }
 
       router.push(`/order/confirmation?id=${data.data._id}`);
     } catch (err) {
@@ -149,6 +165,12 @@ export default function CheckoutPage() {
         buyNowProduct={buyNowProduct}
         subtotal={subtotal}
       />
+
+      <section className="mt-6">
+        <h2 className="font-semibold mb-2">Have a coupon?</h2>
+        <CouponInput />
+      </section>
+
       <PaymentMethod
         paymentMethod={paymentMethod}
         setPaymentMethod={setPaymentMethod}
@@ -163,7 +185,9 @@ export default function CheckoutPage() {
       >
         {paymentMethod === "paypal"
           ? "Please use the PayPal button below"
-          : "Place Order"}
+          : `Place Order (QAR ${(subtotal - (coupon?.discount || 0)).toFixed(
+              2
+            )})`}
       </button>
 
       {paymentMethod === "paypal" && (
@@ -172,7 +196,7 @@ export default function CheckoutPage() {
             buyNowProduct
               ? (buyNowProduct.discountPrice ?? buyNowProduct.price) *
                 buyNowProduct.quantity
-              : subtotal
+              : subtotal - (coupon?.discount || 0)
           }
           onSuccess={handlePlaceOrder}
           onError={() => setError("PayPal checkout failed.")}

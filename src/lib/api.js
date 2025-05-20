@@ -163,4 +163,7 @@ export const getReviewsForProduct = (productId) => {
 export const submitReview = (payload) =>
   api.post("/api/reviews", payload).then((res) => res.data);
 
+export const applyCoupon = (code, subtotal) =>
+  api.post("/api/coupons/apply", { code, subtotal });
+
 export default api;
