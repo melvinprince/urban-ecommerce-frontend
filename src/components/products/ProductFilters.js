@@ -1,11 +1,11 @@
 "use client";
 
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { getCategories } from "@/lib/api";
 
-/* fixed lists */
+/* constants */
 const sizes = ["XS", "S", "M", "L", "XL", "XXL"];
 const colors = ["Black", "White", "Blue", "Red", "Green", "Beige"];
 const sortOptions = [
@@ -15,20 +15,23 @@ const sortOptions = [
   { label: "Popularity", value: "popularity" },
 ];
 
-/* helper to turn flat → tree */
+/* helper: flat list -> tree */
 const buildTree = (rows) => {
   const map = Object.fromEntries(
     rows.map((r) => [r._id, { ...r, children: [] }])
   );
   const root = [];
   rows.forEach((r) => {
-    if (r.parent) map[r.parent]?.children.push(map[r._id]);
-    else root.push(map[r._id]);
+    r.parent ? map[r.parent]?.children.push(map[r._id]) : root.push(map[r._id]);
   });
   return root;
 };
 
-export default function ProductFilters() {
+/**
+ * @param {boolean}   showCategory  – whether to render the category tree
+ * @param {string?}   lockedCatSlug – slug to force-select; UI hidden if provided & showCategory=false
+ */
+export default function ProductFilters({ showCategory = true }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -36,11 +39,11 @@ export default function ProductFilters() {
   const [tree, setTree] = useState([]);
   const [openSet, setOpenSet] = useState(new Set());
 
-  /* fetch categories once */
+  /* ── fetch categories once ── */
   useEffect(() => {
     (async () => {
       try {
-        const res = await getCategories(); // flat list
+        const res = await getCategories();
         setTree(buildTree(res?.data || []));
       } catch (e) {
         console.error(e);
@@ -48,26 +51,36 @@ export default function ProductFilters() {
     })();
   }, []);
 
-  /* navigation helpers */
+  /* ── if locked category slug present and URL lacks it, inject it once ── */
+  // useEffect(() => {
+  //   if (!lockedCatSlug) return;
+  //   const current =
+  //     searchParams.get("category")?.split(",").filter(Boolean) || [];
+  //   if (current.includes(lockedCatSlug)) return;
+  //   const params = new URLSearchParams(searchParams.toString());
+  //   current.push(lockedCatSlug);
+  //   params.set("category", current.join(","));
+  //   params.delete("page");
+  //   router.replace(`${pathname}?${params.toString()}`);
+  // }, [lockedCatSlug, pathname, router, searchParams]);
+
+  /* shared helpers */
   const pushParams = (params) =>
     router.push(`${pathname}?${params.toString()}`);
 
-  /* ----- SINGLE-VALUE setter (priceMin / priceMax / sort) ----- */
-  const setSingle = (key, value) => {
+  const setSingle = (key, val) => {
     const params = new URLSearchParams(searchParams.toString());
-    value ? params.set(key, value) : params.delete(key);
-    params.delete("page"); // reset pagination
+    val ? params.set(key, val) : params.delete(key);
+    params.delete("page");
     pushParams(params);
   };
 
-  /* ----- MULTI-LIST toggle (category / size / color) ----- */
-  const toggleMulti = (key, slug) => {
+  const toggleMulti = (key, val) => {
     const params = new URLSearchParams(searchParams.toString());
     const list = params.get(key)?.split(",").filter(Boolean) || [];
-    const next = list.includes(slug)
-      ? list.filter((v) => v !== slug)
-      : [...list, slug];
-
+    const next = list.includes(val)
+      ? list.filter((v) => v !== val)
+      : [...list, val];
     next.length ? params.set(key, next.join(",")) : params.delete(key);
     params.delete("page");
     pushParams(params);
@@ -76,64 +89,62 @@ export default function ProductFilters() {
   const multiv = (key) =>
     searchParams.get(key)?.split(",").filter(Boolean) || [];
 
-  /* ----- UI helpers ----- */
-  const toggleParentOpen = (id) => {
+  /* parent open toggle */
+  const toggleOpen = (id) => {
     const s = new Set(openSet);
     s.has(id) ? s.delete(id) : s.add(id);
     setOpenSet(s);
   };
 
-  /* ---------------- RENDER ---------------- */
+  /* ───────────────── RENDER ───────────────── */
   return (
     <aside className="w-full md:w-64 p-4 bg-white border rounded-xl mb-6">
-      {/* CATEGORY tree */}
-      <div className="mb-6">
-        <h3 className="font-semibold mb-2">Category</h3>
-        <ul className="space-y-1 max-h-52 overflow-y-auto pr-1">
-          {tree.map((parent) => (
-            <li key={parent._id}>
-              {/* parent row */}
-              <div className="flex items-center gap-1">
-                <button
-                  className="w-4 text-sm"
-                  onClick={() => toggleParentOpen(parent._id)}
-                >
-                  {parent.children.length
-                    ? openSet.has(parent._id)
-                      ? "▾"
-                      : "▸"
-                    : ""}
-                </button>
-
-                <input
-                  type="checkbox"
-                  className="mr-1"
-                  checked={multiv("category").includes(parent.slug)}
-                  onChange={() => toggleMulti("category", parent.slug)}
-                />
-                <span className="capitalize">{parent.name}</span>
-              </div>
-
-              {/* children */}
-              {openSet.has(parent._id) && parent.children.length > 0 && (
-                <ul className="pl-6 space-y-1">
-                  {parent.children.map((child) => (
-                    <li key={child._id} className="flex items-center gap-1">
-                      <input
-                        type="checkbox"
-                        className="mr-1"
-                        checked={multiv("category").includes(child.slug)}
-                        onChange={() => toggleMulti("category", child.slug)}
-                      />
-                      <span className="capitalize">{child.name}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </li>
-          ))}
-        </ul>
-      </div>
+      {/* CATEGORY TREE (optional) */}
+      {showCategory && (
+        <div className="mb-6">
+          <h3 className="font-semibold mb-2">Category</h3>
+          <ul className="space-y-1 max-h-52 overflow-y-auto pr-1">
+            {tree.map((parent) => (
+              <li key={parent._id}>
+                <div className="flex items-center gap-1">
+                  <button
+                    className="w-4 text-sm"
+                    onClick={() => toggleOpen(parent._id)}
+                  >
+                    {parent.children.length
+                      ? openSet.has(parent._id)
+                        ? "▾"
+                        : "▸"
+                      : ""}
+                  </button>
+                  <input
+                    type="checkbox"
+                    className="mr-1"
+                    checked={multiv("category").includes(parent.slug)}
+                    onChange={() => toggleMulti("category", parent.slug)}
+                  />
+                  <span className="capitalize">{parent.name}</span>
+                </div>
+                {openSet.has(parent._id) && parent.children.length > 0 && (
+                  <ul className="pl-6 space-y-1">
+                    {parent.children.map((child) => (
+                      <li key={child._id} className="flex items-center gap-1">
+                        <input
+                          type="checkbox"
+                          className="mr-1"
+                          checked={multiv("category").includes(child.slug)}
+                          onChange={() => toggleMulti("category", child.slug)}
+                        />
+                        <span className="capitalize">{child.name}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* PRICE */}
       <div className="mb-6">
@@ -208,9 +219,9 @@ export default function ProductFilters() {
           onChange={(e) => setSingle("sort", e.target.value)}
         >
           <option value="">Default</option>
-          {sortOptions.map((s) => (
-            <option key={s.value} value={s.value}>
-              {s.label}
+          {sortOptions.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
             </option>
           ))}
         </select>
