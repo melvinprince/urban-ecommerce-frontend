@@ -9,12 +9,19 @@ export default function CouponInput() {
   const [code, setCode] = useState("");
   const applyCoupon = useCheckoutStore((s) => s.applyCoupon);
   const clearCoupon = useCheckoutStore((s) => s.clearCoupon);
-  const { coupon } = useCheckoutStore();
+  const coupon = useCheckoutStore((s) => s.coupon);
+  const address = useCheckoutStore((s) => s.address); // for guest email
   const { showSuccess, showError } = usePopupStore();
 
   const handleApply = async () => {
+    // If guest, ensure email is entered first
+    if (!address.email) {
+      showError(
+        "Please enter your email in shipping details before applying a coupon."
+      );
+      return;
+    }
     await applyCoupon(code.trim().toUpperCase());
-    // read fresh state
     const { error: err, coupon: cpn } = useCheckoutStore.getState();
     if (err) {
       showError(err);

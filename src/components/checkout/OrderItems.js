@@ -1,3 +1,4 @@
+// frontend/src/components/checkout/OrderItems.jsx
 "use client";
 
 import useCheckoutStore from "@/store/checkoutStore";
@@ -59,7 +60,7 @@ export default function OrderItems({ cartItems, buyNowProduct, subtotal }) {
       {coupon && (
         <div className="flex justify-between text-green-700">
           <span>Discount ({coupon.code}):</span>
-          <span>- {discount.toFixed(2)} QAR</span>
+          <span>- QAR {discount.toFixed(2)}</span>
         </div>
       )}
 

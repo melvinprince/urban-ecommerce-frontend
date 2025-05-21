@@ -1,3 +1,4 @@
+// frontend/src/app/checkout/page.jsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -23,7 +24,6 @@ export default function CheckoutPage() {
   const {
     items: cartItems,
     subtotal,
-    totalItems,
     isLoaded,
     fetchCart,
     clearCart,
@@ -121,8 +121,9 @@ export default function CheckoutPage() {
         couponCode: coupon?.code,
       });
 
-      if (buyNowProduct) clearBuyNowProduct();
-      else {
+      if (buyNowProduct) {
+        clearBuyNowProduct();
+      } else {
         await clearCart();
         clearCoupon();
       }
@@ -133,8 +134,9 @@ export default function CheckoutPage() {
     }
   };
 
-  if (!isLoaded)
+  if (!isLoaded) {
     return <div className="p-6 text-center">Loading checkout…</div>;
+  }
 
   if (!buyNowProduct && cartItems.length === 0) {
     return (

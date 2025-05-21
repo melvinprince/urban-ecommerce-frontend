@@ -145,6 +145,7 @@ export const replyToTicket = (id, formData) =>
     headers: { "Content-Type": "multipart/form-data" },
   });
 
+//Product Reviews
 export const getReviewsForProduct = (productId) => {
   console.log(`[API] 📤 Requesting reviews for product: ${productId}`);
   return api
@@ -159,11 +160,11 @@ export const getReviewsForProduct = (productId) => {
       throw err;
     });
 };
-
 export const submitReview = (payload) =>
   api.post("/api/reviews", payload).then((res) => res.data);
 
-export const applyCoupon = (code, subtotal) =>
-  api.post("/api/coupons/apply", { code, subtotal });
+// Coupons
+export const applyCoupon = (code, subtotal, email) =>
+  api.post("/api/coupons/apply", { code, subtotal, email });
 
 export default api;

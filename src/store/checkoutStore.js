@@ -51,17 +51,22 @@ const useCheckoutStore = create(
 
       // use the named export from lib/api.js
       applyCoupon: async (code) => {
+        const subtotal = get().subtotal;
+        const email = get().address.email; // <— include email
         try {
-          const res = await apiApplyCoupon(code, get().subtotal);
-          // res is { success, message, data: { code, type, value, discount } }
+          const res = await apiApplyCoupon(code, subtotal, email);
+          // res.data is { code, type, value, discount }
           set({ coupon: res.data, error: null });
         } catch (err) {
           set({
             error:
-              err.response?.message || err.message || "Failed to apply coupon.",
+              err.response?.data?.message ||
+              err.message ||
+              "Failed to apply coupon.",
           });
         }
       },
+
       clearCoupon: () => set({ coupon: null, error: null }),
     }),
     {
