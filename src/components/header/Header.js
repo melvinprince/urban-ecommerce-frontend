@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import useAuthStore from "@/store/authStore";
 import useCartStore from "@/store/cartStore";
 import { ShoppingCart } from "lucide-react";
@@ -16,6 +17,8 @@ const headerLinks = [
 export default function Header() {
   const { isLoggedIn, logout, user, hydrated, initializeAuth } = useAuthStore();
   const { totalItems, fetchCart } = useCartStore();
+  const router = useRouter();
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     initializeAuth();
@@ -24,11 +27,36 @@ export default function Header() {
 
   if (!hydrated) return null;
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+  };
+
   return (
-    <header className="flex justify-between items-center bg-ogr p-4">
+    <header className="flex flex-col sm:flex-row justify-between items-center bg-ogr p-4 gap-4">
+      {/* Logo */}
       <div className="text-2xl font-bold text-white">Urban Home</div>
 
-      <nav className="flex items-center gap-[2rem]">
+      {/* Search Bar */}
+      <form onSubmit={handleSearch} className="w-full sm:max-w-md flex gap-2">
+        <input
+          type="text"
+          placeholder="Search products..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:border-black"
+        />
+        <button
+          type="submit"
+          className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition"
+        >
+          Search
+        </button>
+      </form>
+
+      {/* Navigation */}
+      <nav className="flex flex-wrap items-center gap-4 sm:gap-6">
         {headerLinks.map(({ id, text, link }) => (
           <Link
             key={id}

@@ -167,4 +167,12 @@ export const submitReview = (payload) =>
 export const applyCoupon = (code, subtotal, email) =>
   api.post("/api/coupons/apply", { code, subtotal, email });
 
+// Product Search
+export const searchProducts = async (query, page = 1, limit = 5) => {
+  const res = await api.get("/api/products/search", {
+    params: { q: query, page, limit },
+  });
+  return res;
+};
+
 export default api;
