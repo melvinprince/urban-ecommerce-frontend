@@ -175,4 +175,8 @@ export const searchProducts = async (query, page = 1, limit = 5) => {
   return res;
 };
 
+// Fetch multiple products by IDs
+export const getProductsByIds = (ids) =>
+  api.post("/api/products/by-ids", { ids }).then((res) => res.data);
+
 export default api;

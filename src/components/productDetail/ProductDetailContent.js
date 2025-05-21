@@ -6,18 +6,23 @@ import ProductGallery from "@/components/productDetail/ProductGallery";
 import ProductInfo from "@/components/productDetail/ProductInfo";
 import Loader from "@/components/common/Loader";
 import { getProductBySlug } from "@/lib/api";
+import useRecentlyViewedStore from "@/store/recentlyViewedStore"; 
 
 export default function ProductDetailContent() {
   const { slug } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { addItem } = useRecentlyViewedStore(); 
 
   useEffect(() => {
     async function fetchProduct() {
       try {
         const { data } = await getProductBySlug(slug);
         setProduct(data);
+
+
+        if (data?._id) addItem(data._id); 
       } catch (err) {
         console.error(err);
         setError(err.message || "Failed to load product.");
@@ -26,7 +31,7 @@ export default function ProductDetailContent() {
       }
     }
 
-    if (slug) fetchProduct(); // avoid calling before slug is ready
+    if (slug) fetchProduct();
   }, [slug]);
 
   if (loading) return <Loader />;
