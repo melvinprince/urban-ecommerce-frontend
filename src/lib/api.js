@@ -167,11 +167,9 @@ export const submitReview = (payload) =>
 export const applyCoupon = (code, subtotal, email) =>
   api.post("/api/coupons/apply", { code, subtotal, email });
 
-// Product Search
-export const searchProducts = async (query, page = 1, limit = 5) => {
-  const res = await api.get("/api/products/search", {
-    params: { q: query, page, limit },
-  });
+// Filtered search or full list
+export const searchProducts = async (filters = {}) => {
+  const res = await api.get("/api/products/search", { params: filters });
   return res;
 };
 
