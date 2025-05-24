@@ -2,7 +2,7 @@ import { create } from "zustand";
 import apiService from "@/lib/apiService"; // Replace old API import
 import EventBus from "@/lib/eventBus"; // Import EventBus
 
-const useAuthStore = create((set) => ({
+const useAuthStore = create((set, get) => ({
   isLoggedIn: false,
   token: null, // not used anymore, but kept for compatibility
   user: null,
@@ -30,7 +30,7 @@ const useAuthStore = create((set) => ({
     try {
       await apiService.auth.logout(); // Updated API call
     } catch (err) {
-      console.warn("Logout failed:", err.message);
+      console.warn("[AuthStore] ❌ Logout failed:", err.message);
     }
     set({ isLoggedIn: false, token: null, user: null, hydrated: true });
     EventBus.emit("user:logout"); // Emit logout event
@@ -64,7 +64,9 @@ const useAuthStore = create((set) => ({
     }
   },
 
-  setRedirectPath: (path) => set({ redirectPath: path }),
+  setRedirectPath: (path) => {
+    set({ redirectPath: path });
+  },
 }));
 
 export default useAuthStore;

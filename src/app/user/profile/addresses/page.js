@@ -16,11 +16,13 @@ export default function AddressBookPage() {
 
   const fetchAddresses = async () => {
     try {
-      const res = await apiService.address.getAll();
+      const res = await apiService.addresses.get();
+      console.log("[AddressBookPage] 🌐 API response:", res);
+
       const data = Array.isArray(res.data) ? res.data : [];
       setAddresses(data);
     } catch (e) {
-      showError("Failed to load addresses");
+      showError(`Failed to load addresses ${e}`);
       setAddresses([]);
     } finally {
       setLoading(false);

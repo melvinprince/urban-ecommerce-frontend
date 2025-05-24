@@ -66,7 +66,7 @@ const useCartStore = create(
         addItem: async (item) => {
           const { productId, quantity = 1, size, color } = item;
           if (isLoggedIn()) {
-            const { data } = await apiService.cart.addOrUpdateItem({
+            const { data } = await apiService.cart.addOrUpdate({
               productId,
               quantity,
               size,

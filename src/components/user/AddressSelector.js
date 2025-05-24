@@ -11,7 +11,7 @@ export default function AddressSelector({ address, setAddress }) {
 
   const fetchAddresses = async () => {
     try {
-      const res = await apiService.addresses.get(); // Updated API call
+      const res = await apiService.addresses.get();
       setAddresses(res.data);
     } catch (e) {
       console.error("❌ [AddressSelector] fetch failed", e);

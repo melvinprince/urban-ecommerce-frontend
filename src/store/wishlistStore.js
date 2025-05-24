@@ -24,8 +24,8 @@ const useWishlistStore = create(
         fetchWishlist: async () => {
           if (isLoggedIn()) {
             try {
-              const data = await apiService.wishlist.getWishlist(); // 🆕 apiService
-              set({ items: data, isLoaded: true, error: null });
+              const res = await apiService.wishlist.get(); // ✅ CORRECT method
+              set({ items: res.data, isLoaded: true, error: null });
               return;
             } catch (err) {
               console.error(
@@ -38,10 +38,10 @@ const useWishlistStore = create(
 
         addItem: async (product) => {
           if (isLoggedIn()) {
-            const data = await apiService.wishlist.addToWishlist({
+            const res = await apiService.wishlist.add({
               productId: product._id,
-            }); // 🆕
-            set({ items: data, error: null });
+            }); // ✅ CORRECT
+            set({ items: res.data, error: null });
           } else {
             const store = get();
             const exists = store.items.some(
@@ -56,8 +56,8 @@ const useWishlistStore = create(
 
         removeItem: async (itemId) => {
           if (isLoggedIn()) {
-            const data = await apiService.wishlist.removeFromWishlist(itemId); // 🆕
-            set({ items: data, error: null });
+            const res = await apiService.wishlist.remove(itemId); // ✅ CORRECT
+            set({ items: res.data, error: null });
           } else {
             const store = get();
             const updated = store.items.filter((i) => i._id !== itemId);
@@ -67,7 +67,7 @@ const useWishlistStore = create(
 
         clearWishlist: async () => {
           if (isLoggedIn()) {
-            await apiService.wishlist.clearWishlist(); // 🆕
+            await apiService.wishlist.clear(); // ✅ CORRECT
           }
           set({ items: [] });
         },
