@@ -22,28 +22,41 @@ export default function AddressFormModal({
     isDefault: false,
     label: "My Address",
   });
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (initialData) setForm({ ...initialData });
+    if (initialData) {
+      setForm({ ...initialData });
+    }
   }, [initialData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (submitting) {
+      console.warn("🚫 [AddressFormModal] already submitting");
+      return;
+    }
+
+    setSubmitting(true);
+
+    const fullAddress = `${form.street}, ${form.city}, ${form.postalCode}, ${form.country}`;
+    const payload = { ...form, address: fullAddress };
+
     try {
       if (initialData) {
-        // Edit mode — delegate update handling to parent
-        await onSuccess(form);
+        await onSuccess(payload);
         showSuccess("Address updated successfully");
       } else {
-        // Add mode
-        const data = await addUserAddress(form);
-        const newAddress = data[data.length - 1]; // latest address from array
+        const res = await addUserAddress(payload);
+        const newAddress = res.data.at(-1);
         showSuccess("Address added successfully");
         onSuccess(newAddress);
       }
     } catch (err) {
       showError(err.message || "Something went wrong");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -70,7 +83,9 @@ export default function AddressFormModal({
               name={field}
               placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
               value={form[field]}
-              onChange={(e) => setForm({ ...form, [field]: e.target.value })}
+              onChange={(e) => {
+                setForm({ ...form, [field]: e.target.value });
+              }}
               className="w-full border rounded p-2"
               required
             />
@@ -80,19 +95,26 @@ export default function AddressFormModal({
             <input
               type="checkbox"
               checked={form.isDefault}
-              onChange={(e) =>
-                setForm({ ...form, isDefault: e.target.checked })
-              }
+              onChange={(e) => {
+                setForm({ ...form, isDefault: e.target.checked });
+              }}
             />
             Set as default address
           </label>
 
           <div className="flex justify-end gap-4 pt-3">
-            <button type="button" onClick={onClose} className="text-gray-600">
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+              }}
+              className="text-gray-600"
+            >
               Cancel
             </button>
             <button
               type="submit"
+              disabled={submitting}
               className="bg-ogr text-white px-4 py-2 rounded"
             >
               {initialData ? "Update" : "Save Address"}

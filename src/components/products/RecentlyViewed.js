@@ -13,8 +13,6 @@ export default function RecentlyViewed() {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      console.log("Recently viewed product IDs:", productIds);
-
       if (!productIds.length) {
         setLoading(false);
         return;
@@ -22,8 +20,6 @@ export default function RecentlyViewed() {
 
       try {
         const res = await getProductsByIds(productIds);
-        console.log("Recently viewed products:", res);
-
         setProducts(res || []);
       } catch (err) {
         console.error("Failed to fetch recently viewed products", err);

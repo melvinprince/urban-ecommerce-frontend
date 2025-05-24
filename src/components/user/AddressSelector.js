@@ -14,7 +14,7 @@ export default function AddressSelector({ address, setAddress }) {
       const res = await getUserAddresses();
       setAddresses(res.data);
     } catch (e) {
-      console.error("Failed to fetch addresses", e);
+      console.error("❌ [AddressSelector] fetch failed", e);
     } finally {
       setLoading(false);
     }
@@ -24,7 +24,9 @@ export default function AddressSelector({ address, setAddress }) {
     fetchAddresses();
   }, []);
 
-  const handleSelect = (addr) => setAddress(addr);
+  const handleSelect = (addr) => {
+    setAddress(addr);
+  };
 
   return (
     <section className="border p-4 rounded">
@@ -36,7 +38,9 @@ export default function AddressSelector({ address, setAddress }) {
         <div>
           <p>No saved addresses.</p>
           <button
-            onClick={() => setShowForm(true)}
+            onClick={() => {
+              setShowForm(true);
+            }}
             className="text-blue-600 underline mt-2"
           >
             ➕ Add Address
@@ -55,24 +59,26 @@ export default function AddressSelector({ address, setAddress }) {
               }`}
             >
               <div className="font-semibold">
-                {addr?.label}{" "}
-                {addr?.isDefault && (
+                {addr.label}{" "}
+                {addr.isDefault && (
                   <span className="text-green-700 ml-2">(Default)</span>
                 )}
               </div>
               <p>
-                {addr?.fullName} • {addr?.phone}
+                {addr.fullName} • {addr.phone}
               </p>
               <p>
-                {addr?.street}, {addr?.city}
+                {addr.street}, {addr.city}
               </p>
               <p>
-                {addr?.postalCode}, {addr?.country}
+                {addr.postalCode}, {addr.country}
               </p>
             </div>
           ))}
           <button
-            onClick={() => setShowForm(true)}
+            onClick={() => {
+              setShowForm(true);
+            }}
             className="text-blue-600 underline mt-2"
           >
             ➕ Add Another Address
@@ -82,12 +88,14 @@ export default function AddressSelector({ address, setAddress }) {
 
       {showForm && (
         <AddressFormModal
-          onClose={() => setShowForm(false)}
-          onSuccess={async () => {
-            await fetchAddresses(); // 🔁 Refresh full list
-            const latest =
-              addresses.find((a) => a.isDefault) || addresses.at(-1);
-            if (latest) setAddress(latest);
+          onClose={() => {
+            setShowForm(false);
+          }}
+          onSuccess={async (newAddress) => {
+            setAddresses((prev) => {
+              return [...prev, newAddress];
+            });
+            setAddress(newAddress);
             setShowForm(false);
           }}
         />

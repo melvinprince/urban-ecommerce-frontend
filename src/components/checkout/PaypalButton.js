@@ -28,7 +28,6 @@ export default function PayPalButton({ amount, onSuccess, onError }) {
         onApprove={async (data) => {
           try {
             const captureResult = await capturePaypalOrder(data.orderID);
-            console.log("✅ PayPal Payment Captured:", captureResult);
             onSuccess?.(captureResult); // Call order placement logic
           } catch (err) {
             console.error("❌ Failed to capture PayPal order:", err.message);

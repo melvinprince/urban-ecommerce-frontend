@@ -19,11 +19,9 @@ const useCartStore = create((set, get) => {
     error: null,
 
     fetchCart: async () => {
-      console.log("[CartStore] Fetching cart...");
       if (isLoggedIn()) {
         try {
           const { data } = await getCart();
-          console.log("[CartStore] Fetched server cart:", data);
           set({
             items: data.items,
             totalItems: data.totalItems,
@@ -32,7 +30,6 @@ const useCartStore = create((set, get) => {
             error: null,
           });
           localStorage.setItem("cart", JSON.stringify(data.items));
-          console.log("[CartStore] Server cart saved to localStorage");
           return;
         } catch (err) {
           console.error(
@@ -41,7 +38,6 @@ const useCartStore = create((set, get) => {
         }
       }
       const guest = JSON.parse(localStorage.getItem("cart") || "[]");
-      console.log("[CartStore] Loaded guest cart from localStorage:", guest);
       const total = guest.reduce((s, i) => s + i.quantity, 0);
       const sum = guest.reduce(
         (s, i) => s + i.quantity * (i.product.price || 0),
@@ -57,7 +53,6 @@ const useCartStore = create((set, get) => {
     },
 
     addItem: async (item) => {
-      console.log("[CartStore] Adding item to cart:", item);
       const { productId, quantity = 1, size, color } = item;
       if (isLoggedIn()) {
         const { data } = await addOrUpdateCartItem({
@@ -66,7 +61,6 @@ const useCartStore = create((set, get) => {
           size,
           color,
         });
-        console.log("[CartStore] Server responded after add:", data);
         set({
           items: data.items,
           totalItems: data.totalItems,
@@ -74,7 +68,6 @@ const useCartStore = create((set, get) => {
           error: null,
         });
         localStorage.setItem("cart", JSON.stringify(data.items));
-        console.log("[CartStore] Cart updated in localStorage after add");
       } else {
         const store = get();
         let updated = [...store.items];
@@ -98,17 +91,14 @@ const useCartStore = create((set, get) => {
           (s, i) => s + i.quantity * (i.product.price || 0),
           0
         );
-        console.log("[CartStore] Guest cart updated locally:", updated);
         set({ items: updated, totalItems: total, subtotal: sum });
         localStorage.setItem("cart", JSON.stringify(updated));
       }
     },
 
     removeItem: async (itemId) => {
-      console.log("[CartStore] Removing item:", itemId);
       if (isLoggedIn()) {
         const { data } = await removeCartItem(itemId);
-        console.log("[CartStore] Server responded after remove:", data);
         set({
           items: data.items,
           totalItems: data.totalItems,
@@ -116,7 +106,6 @@ const useCartStore = create((set, get) => {
           error: null,
         });
         localStorage.setItem("cart", JSON.stringify(data.items));
-        console.log("[CartStore] Cart updated in localStorage after remove");
       } else {
         const store = get();
         const updated = store.items.filter((i) => i._id !== itemId);
@@ -125,17 +114,14 @@ const useCartStore = create((set, get) => {
           (s, i) => s + i.quantity * (i.product.price || 0),
           0
         );
-        console.log("[CartStore] Guest cart after remove:", updated);
         set({ items: updated, totalItems: total, subtotal: sum });
         localStorage.setItem("cart", JSON.stringify(updated));
       }
     },
 
     updateItem: async (itemId, updates) => {
-      console.log("[CartStore] Updating item:", itemId, "with", updates);
       if (isLoggedIn()) {
         const { data } = await updateCartItem(itemId, updates);
-        console.log("[CartStore] Server responded after update:", data);
         set({
           items: data.items,
           totalItems: data.totalItems,
@@ -143,7 +129,6 @@ const useCartStore = create((set, get) => {
           error: null,
         });
         localStorage.setItem("cart", JSON.stringify(data.items));
-        console.log("[CartStore] Cart updated in localStorage after update");
       } else {
         const store = get();
         const updated = store.items.map((i) =>
@@ -154,20 +139,15 @@ const useCartStore = create((set, get) => {
           (s, i) => s + i.quantity * (i.product.price || 0),
           0
         );
-        console.log("[CartStore] Guest cart after update:", updated);
         set({ items: updated, totalItems: total, subtotal: sum });
         localStorage.setItem("cart", JSON.stringify(updated));
       }
     },
 
     clearCart: async () => {
-      console.log("[CartStore] Clearing cart");
-
       if (isLoggedIn()) {
         try {
           const { data } = await clearCartServerSide(); // get updated empty cart
-          console.log("[CartStore] Server-side cart cleared");
-
           set({
             items: data.items,
             totalItems: data.totalItems,
@@ -189,7 +169,6 @@ const useCartStore = create((set, get) => {
       }
 
       localStorage.removeItem("cart");
-      console.log("[CartStore] Local cart cleared");
     },
   };
 });

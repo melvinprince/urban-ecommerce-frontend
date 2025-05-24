@@ -115,8 +115,12 @@ export const cancelOrderAsGuest = async ({ customOrderId, email }) => {
 
 // Address (Protected)
 export const getUserAddresses = () => api.get("/api/user/addresses");
-export const addUserAddress = (address) =>
-  api.post("/api/user/addresses", { address });
+// in lib/api.js
+export const addUserAddress = (address) => {
+  console.trace("🔍 addUserAddress called with:", address);
+  return api.post("/api/user/addresses", address);
+};
+
 export const updateUserAddress = (index, address) =>
   api.put(`/api/user/addresses/${index}`, { address });
 export const deleteUserAddress = (index) =>
@@ -147,12 +151,9 @@ export const replyToTicket = (id, formData) =>
 
 //Product Reviews
 export const getReviewsForProduct = (productId) => {
-  console.log(`[API] 📤 Requesting reviews for product: ${productId}`);
   return api
     .get(`/api/reviews/${productId}`)
     .then((res) => {
-      console.log(`[API] ✅ Received ${res.data?.length || 0} reviews`);
-      console.log(res);
       return res.data;
     })
     .catch((err) => {

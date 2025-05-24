@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import {
   getUserAddresses,
-  addUserAddress,
   updateUserAddress,
   deleteUserAddress,
 } from "@/lib/api";
@@ -43,24 +42,30 @@ export default function AddressBookPage() {
     try {
       await deleteUserAddress(index);
       showSuccess("Address deleted successfully");
-      await fetchAddresses();
+      setAddresses((prev) => prev.filter((_, i) => i !== index));
     } catch (err) {
       showError(err.message || "Failed to delete address");
     }
   };
 
-  const handleSave = async (newData) => {
+  const handleSave = async (newAddress) => {
     try {
       if (editingIndex !== null) {
-        await updateUserAddress(editingIndex, newData);
+        // update existing
+        await updateUserAddress(editingIndex, newAddress);
+        setAddresses((prev) =>
+          prev.map((addr, i) =>
+            i === editingIndex ? { ...addr, ...newAddress } : addr
+          )
+        );
         showSuccess("Address updated successfully");
       } else {
-        await addUserAddress(newData);
+        // new address already saved by modal's API call
+        setAddresses((prev) => [...prev, newAddress]);
         showSuccess("Address added successfully");
       }
-
-      await fetchAddresses();
       setShowModal(false);
+      setEditingIndex(null);
     } catch (err) {
       showError(err.message || "Failed to save address");
     }
@@ -87,62 +92,62 @@ export default function AddressBookPage() {
         <p className="text-gray-600">You have no saved addresses yet.</p>
       ) : (
         <div className="space-y-4">
-          {Array.isArray(addresses) &&
-            addresses
-              .filter((addr) => addr && typeof addr === "object")
-              .map((addr, i) => (
-                <div
-                  key={i}
-                  className="border rounded p-4 relative bg-white shadow-sm"
-                >
-                  <div className="flex justify-between items-center">
-                    <div className="font-semibold">
-                      {addr.label}{" "}
-                      {addr.isDefault && (
-                        <span className="text-green-700 text-sm ml-2">
-                          (Default)
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => {
-                          setEditingIndex(i);
-                          setShowModal(true);
-                        }}
-                        className="text-blue-600 hover:underline text-sm"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(i)}
-                        className="text-red-600 hover:underline text-sm"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                  <div className="mt-2 text-sm text-gray-700">
-                    <p>{addr.fullName}</p>
-                    <p>
-                      {addr.street}, {addr.city}
-                    </p>
-                    <p>
-                      {addr.postalCode}, {addr.country}
-                    </p>
-                    <p>
-                      {addr.email} • {addr.phone}
-                    </p>
-                  </div>
+          {addresses.map((addr, i) => (
+            <div
+              key={i}
+              className="border rounded p-4 relative bg-white shadow-sm"
+            >
+              <div className="flex justify-between items-center">
+                <div className="font-semibold">
+                  {addr.label}{" "}
+                  {addr.isDefault && (
+                    <span className="text-green-700 text-sm ml-2">
+                      (Default)
+                    </span>
+                  )}
                 </div>
-              ))}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setEditingIndex(i);
+                      setShowModal(true);
+                    }}
+                    className="text-blue-600 hover:underline text-sm"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(i)}
+                    className="text-red-600 hover:underline text-sm"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+              <div className="mt-2 text-sm text-gray-700">
+                <p>{addr.fullName}</p>
+                <p>
+                  {addr.street}, {addr.city}
+                </p>
+                <p>
+                  {addr.postalCode}, {addr.country}
+                </p>
+                <p>
+                  {addr.email} • {addr.phone}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
       {showModal && (
         <AddressFormModal
           initialData={editingIndex !== null ? addresses[editingIndex] : null}
-          onClose={() => setShowModal(false)}
+          onClose={() => {
+            setShowModal(false);
+            setEditingIndex(null);
+          }}
           onSuccess={handleSave}
         />
       )}

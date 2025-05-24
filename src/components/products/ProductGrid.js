@@ -1,9 +1,6 @@
 import ProductCard from "@/components/products/ProductCard";
 
 export default function ProductGrid({ products }) {
-  // 🛡️ Ensure products is always an array
-  console.log("Products in ProductGrid:", products);
-
   const safeProducts = Array.isArray(products) ? products : [];
 
   if (safeProducts.length === 0) {
