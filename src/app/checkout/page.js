@@ -112,9 +112,15 @@ export default function CheckoutPage() {
       const discount = coupon?.discount || 0;
       const finalAmount = totalAmount - discount;
 
+      // Build the concatenated address string to satisfy backend validation
+      const fullAddress = `${address.street}, ${address.city}, ${address.postalCode}, ${address.country}`;
+
       const data = await placeOrder({
         items,
-        address,
+        address: {
+          ...address,
+          address: fullAddress,
+        },
         paymentMethod,
         isPaid: paymentMethod === "paypal",
         totalAmount: finalAmount,
