@@ -3,22 +3,26 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import useAuthStore from "@/store/authStore";
-import { loginUser, registerUser } from "@/lib/api"; // API methods
-import usePopupStore from "@/store/popupStore"; // 🆕 Global popup store
-import PopupAlert from "@/components/PopupAlert"; // To render globally
+import { loginUser, registerUser } from "@/lib/api";
+import usePopupStore from "@/store/popupStore";
+import PopupAlert from "@/components/PopupAlert";
 
 export default function Page() {
   const [activeTab, setActiveTab] = useState("login");
 
-  const { login, isLoggedIn, initializeAuth, redirectPath, setRedirectPath } =
-    useAuthStore();
-
-  const { showSuccess, showError } = usePopupStore.getState(); // 🆕 Get popup methods
+  const {
+    login,
+    isLoggedIn,
+    initializeAuth,
+    redirectPath,
+    setRedirectPath,
+    refreshUser,
+  } = useAuthStore();
+  const { showSuccess, showError } = usePopupStore.getState();
 
   const router = useRouter();
   const pathname = usePathname();
 
-  // Form states
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -44,58 +48,46 @@ export default function Page() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
     try {
-      const { data, message } = await loginUser({ email, password });
+      const { message } = await loginUser({ email, password });
+      await refreshUser(); // 🌟 Fetch fresh user info after login
 
-      localStorage.setItem("token", data.token);
-      login(data.token);
-
-      showSuccess(message || "Logged in successfully!"); // 🆕 Show success
-
+      showSuccess(message || "Logged in successfully!");
       const destination = localStorage.getItem("lastPage") || "/";
       router.push(destination);
       localStorage.removeItem("lastPage");
     } catch (error) {
-      showError(error.message || "Login failed"); // 🆕 Show error
+      showError(error.message || "Login failed");
     }
   };
 
   const handleSignup = async (e) => {
     e.preventDefault();
-
     if (password !== repeatPassword) {
-      showError("Passwords do not match"); // 🆕 Show error
+      showError("Passwords do not match");
       return;
     }
-
     try {
-      const { data, message } = await registerUser({
+      const { message } = await registerUser({
         name,
         email,
         password,
         repeatPassword,
       });
+      await refreshUser(); // 🌟 Fetch fresh user info after signup
 
-      localStorage.setItem("token", data.token);
-      login(data.token);
-
-      showSuccess(message || "Account created successfully!"); // 🆕 Show success
-
+      showSuccess(message || "Account created successfully!");
       const destination = localStorage.getItem("lastPage") || "/";
       router.push(destination);
       localStorage.removeItem("lastPage");
     } catch (error) {
-      showError(error.message || "Signup failed"); // 🆕 Show error
+      showError(error.message || "Signup failed");
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="w-full max-w-md p-6">
-        {/* Popup is globally rendered */}
-
-        {/* Tabs */}
         {!isLoggedIn ? (
           <>
             <div className="flex mb-6">

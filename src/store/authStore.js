@@ -1,43 +1,65 @@
 import { create } from "zustand";
-import { jwtDecode } from "jwt-decode";
+import api from "@/lib/api";
 import useCartStore from "./cartStore";
 
 const useAuthStore = create((set) => ({
   isLoggedIn: false,
-  token: null,
+  token: null, // not used anymore, but kept for compatibility
   user: null,
   hydrated: false,
-  redirectPath: "/", // store intended page
+  redirectPath: "/",
 
-  login: (token) => {
-    const decoded = jwtDecode(token);
-    set({
-      isLoggedIn: true,
-      token,
-      user: decoded,
-      hydrated: true,
-    });
+  login: async (credentials) => {
+    try {
+      await api.post("/api/auth/login", credentials); // Cookie is set by backend
+      const res = await api.get("/api/auth/me"); // Fetch user info after login
+      set({
+        isLoggedIn: true,
+        token: null,
+        user: res.data,
+        hydrated: true,
+      });
+    } catch (err) {
+      set({ isLoggedIn: false, token: null, user: null, hydrated: true });
+      throw err;
+    }
   },
 
-  logout: () => {
-    localStorage.removeItem("token");
+  logout: async () => {
+    try {
+      await api.post("/api/auth/logout"); // Call logout endpoint in backend
+    } catch (err) {
+      console.warn("Logout failed:", err.message);
+    }
     set({ isLoggedIn: false, token: null, user: null, hydrated: true });
-    // Clear cart on logout
     useCartStore.getState().clearCart();
   },
 
-  initializeAuth: () => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      const decoded = jwtDecode(token);
+  initializeAuth: async () => {
+    try {
+      const res = await api.get("/api/auth/me");
       set({
         isLoggedIn: true,
-        token,
-        user: decoded,
+        token: null,
+        user: res.data,
         hydrated: true,
       });
-    } else {
-      set({ hydrated: true });
+    } catch (err) {
+      set({ isLoggedIn: false, token: null, user: null, hydrated: true });
+    }
+  },
+
+  refreshUser: async () => {
+    try {
+      const res = await api.get("/api/auth/me");
+      set({
+        isLoggedIn: true,
+        token: null,
+        user: res.data,
+        hydrated: true,
+      });
+    } catch (err) {
+      set({ isLoggedIn: false, token: null, user: null, hydrated: true });
     }
   },
 

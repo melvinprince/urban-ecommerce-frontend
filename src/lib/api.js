@@ -7,21 +7,10 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true, // 🔥 Automatically include cookies in requests
 });
 
-// Attach auth token automatically
-api.interceptors.request.use(
-  (config) => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token");
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+// Remove the Authorization header interceptor (we don’t need it anymore!)
 
 // Handle responses
 api.interceptors.response.use(
@@ -77,7 +66,7 @@ export const clearWishlist = () => api.post("/api/wishlist/clear");
 // Orders
 export const placeOrder = (payload) => api.post("/api/orders", payload);
 export const createPaypalOrder = (totalAmount) =>
-  api.post("/api/paypal/create", { totalAmount }); // totalAmount is number or string, fine.
+  api.post("/api/paypal/create", { totalAmount });
 export const capturePaypalOrder = async (orderId) =>
   api.post(`/api/paypal/capture/${orderId}`);
 
@@ -96,7 +85,7 @@ export const getOrderByCustomId = async (customId) => {
 };
 export const getOrdersByEmail = async (email) => {
   const res = await api.get(`/api/orders/email/${email}`);
-  return res.data; // array of orders
+  return res.data;
 };
 
 // Cancel order by customOrderId (auth required)
@@ -115,18 +104,14 @@ export const cancelOrderAsGuest = async ({ customOrderId, email }) => {
 
 // Address (Protected)
 export const getUserAddresses = () => api.get("/api/user/addresses");
-// in lib/api.js
-export const addUserAddress = (address) => {
-  console.trace("🔍 addUserAddress called with:", address);
-  return api.post("/api/user/addresses", address);
-};
-
+export const addUserAddress = (address) =>
+  api.post("/api/user/addresses", address);
 export const updateUserAddress = (index, address) =>
   api.put(`/api/user/addresses/${index}`, { address });
 export const deleteUserAddress = (index) =>
   api.delete(`/api/user/addresses/${index}`);
 
-//edit Order
+// Edit Order
 export const editOrder = async (customOrderId, data) =>
   api.patch(`/api/orders/edit/${customOrderId}`, data);
 
@@ -138,24 +123,22 @@ export const createTicket = (formData) =>
 
 export const getMyTickets = async () => {
   const res = await api.get("/api/tickets/my-tickets");
-  return res.data; // ✅ Just return the ticket array
+  return res.data;
 };
 export const getTicketById = async (id) => {
   const res = await api.get(`/api/tickets/${id}`);
-  return res.data; // ✅ Just return the ticket object
+  return res.data;
 };
 export const replyToTicket = (id, formData) =>
   api.patch(`/api/tickets/${id}/reply`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 
-//Product Reviews
+// Product Reviews
 export const getReviewsForProduct = (productId) => {
   return api
     .get(`/api/reviews/${productId}`)
-    .then((res) => {
-      return res.data;
-    })
+    .then((res) => res.data)
     .catch((err) => {
       console.error("[API] ❌ Failed to fetch reviews:", err.message || err);
       throw err;

@@ -15,7 +15,12 @@ const headerLinks = [
 ];
 
 export default function Header() {
-  const { isLoggedIn, logout, user, hydrated, initializeAuth } = useAuthStore();
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+  const hydrated = useAuthStore((state) => state.hydrated);
+  const initializeAuth = useAuthStore((state) => state.initializeAuth);
+
   const { totalItems, fetchCart } = useCartStore();
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -35,10 +40,8 @@ export default function Header() {
 
   return (
     <header className="flex flex-col sm:flex-row justify-between items-center bg-ogr p-4 gap-4">
-      {/* Logo */}
       <div className="text-2xl font-bold text-white">Urban Home</div>
 
-      {/* Search Bar */}
       <form onSubmit={handleSearch} className="w-full sm:max-w-md flex gap-2">
         <input
           type="text"
@@ -55,7 +58,6 @@ export default function Header() {
         </button>
       </form>
 
-      {/* Navigation */}
       <nav className="flex flex-wrap items-center gap-4 sm:gap-6">
         {headerLinks.map(({ id, text, link }) => (
           <Link
