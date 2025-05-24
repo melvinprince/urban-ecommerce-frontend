@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getMyTickets } from "@/lib/api";
+import apiService from "@/lib/apiService"; // Updated import
 import usePopupStore from "@/store/popupStore";
 import { useRouter } from "next/navigation";
 
@@ -14,7 +14,7 @@ export default function TicketList() {
   useEffect(() => {
     async function fetchTickets() {
       try {
-        const res = await getMyTickets();
+        const res = await apiService.tickets.getMine(); // Updated
         setTickets(res);
       } catch (err) {
         showError(err.message || "Failed to load tickets");

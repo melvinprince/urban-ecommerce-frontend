@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import useRecentlyViewedStore from "@/store/recentlyViewedStore";
-import { getProductsByIds } from "@/lib/api"; // you'll need to define this if not already
+import apiService from "@/lib/apiService";
 import ProductGrid from "@/components/products/ProductGrid";
 import Loader from "@/components/common/Loader";
 
@@ -19,7 +19,7 @@ export default function RecentlyViewed() {
       }
 
       try {
-        const res = await getProductsByIds(productIds);
+        const res = await apiService.products.getByIds(productIds);
         setProducts(res || []);
       } catch (err) {
         console.error("Failed to fetch recently viewed products", err);

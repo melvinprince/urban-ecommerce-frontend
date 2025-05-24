@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getProducts } from "@/lib/api";
+import apiService from "@/lib/apiService";
 import ProductGrid from "@/components/products/ProductGrid";
 import Loader from "@/components/common/Loader";
 
@@ -14,7 +14,7 @@ export default function HomeProductSection({ title, query = {} }) {
 
     (async () => {
       try {
-        const res = await getProducts({ ...query });
+        const res = await apiService.products.getAll({ ...query });
         if (mounted) {
           setProducts(res.data || []);
         }

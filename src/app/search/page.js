@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import ProductGrid from "@/components/products/ProductGrid";
 import ProductFilters from "@/components/products/ProductFilters";
-import { searchProducts } from "@/lib/api";
+import apiService from "@/lib/apiService";
 import Loader from "@/components/common/Loader";
 
 export default function SearchPage() {
@@ -27,7 +27,7 @@ export default function SearchPage() {
         obj[k] = v;
       });
 
-      const res = await searchProducts(obj);
+      const res = await apiService.products.search(obj);
       setProducts(res?.data?.products || []);
       setTotalPages(res?.data?.pages || 1);
       setLoading(false);

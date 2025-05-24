@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import useAuthStore from "@/store/authStore";
-import { loginUser, registerUser } from "@/lib/api";
+import apiService from "@/lib/apiService";
 import usePopupStore from "@/store/popupStore";
 import PopupAlert from "@/components/PopupAlert";
 
@@ -49,7 +49,7 @@ export default function Page() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const { message } = await loginUser({ email, password });
+      const { message } = await apiService.auth.login({ email, password });
       await refreshUser(); // 🌟 Fetch fresh user info after login
 
       showSuccess(message || "Logged in successfully!");
@@ -68,7 +68,7 @@ export default function Page() {
       return;
     }
     try {
-      const { message } = await registerUser({
+      const { message } = await apiService.auth.register({
         name,
         email,
         password,

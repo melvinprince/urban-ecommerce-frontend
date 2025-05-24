@@ -2,7 +2,7 @@
 
 import { PayPalButtons } from "@paypal/react-paypal-js";
 import { convertToUSD } from "@/lib/helpers";
-import { createPaypalOrder, capturePaypalOrder } from "@/lib/api";
+import apiService from "@/lib/apiService";
 
 export default function PayPalButton({ amount, onSuccess, onError }) {
   const usdAmount = convertToUSD(amount); // Convert QAR to USD
@@ -18,7 +18,7 @@ export default function PayPalButton({ amount, onSuccess, onError }) {
         }}
         createOrder={async () => {
           try {
-            const res = await createPaypalOrder(usdAmount); // res = { data: { id: "..." } }
+            const res = await apiService.paypal.createOrder(usdAmount);
             return res.data.id; // ✅ This should return the PayPal order ID
           } catch (err) {
             console.error("❌ Failed to create PayPal order:", err.message);
@@ -27,7 +27,9 @@ export default function PayPalButton({ amount, onSuccess, onError }) {
         }}
         onApprove={async (data) => {
           try {
-            const captureResult = await capturePaypalOrder(data.orderID);
+            const captureResult = await apiService.paypal.captureOrder(
+              data.orderID
+            );
             onSuccess?.(captureResult); // Call order placement logic
           } catch (err) {
             console.error("❌ Failed to capture PayPal order:", err.message);

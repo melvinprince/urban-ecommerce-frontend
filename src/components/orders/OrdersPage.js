@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getMyOrders } from "@/lib/api";
+import apiService from "@/lib/apiService";
 import useAuthStore from "@/store/authStore";
 import usePopupStore from "@/store/popupStore";
 
@@ -27,7 +27,7 @@ export default function OrdersPage() {
 
     (async () => {
       try {
-        const orders = await getMyOrders();
+        const orders = await apiService.orders.getMine();
         setOrders(orders);
       } catch (err) {
         showError(err.message || "Failed to load orders.");

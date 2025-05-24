@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { getReviewsForProduct, submitReview } from "@/lib/api";
+import apiService from "@/lib/apiService";
 import useAuthStore from "@/store/authStore";
 import usePopupStore from "@/store/popupStore";
 import StarRating from "@/components/common/StarRating";
@@ -16,7 +16,7 @@ export default function ReviewsSection({ productId }) {
   useEffect(() => {
     (async () => {
       try {
-        const res = await getReviewsForProduct(productId);
+        const res = await apiService.reviews.getForProduct(productId);
         setReviews(Array.isArray(res) ? res : []);
       } catch (err) {
         setReviews([]);
@@ -27,13 +27,13 @@ export default function ReviewsSection({ productId }) {
   const handleSubmit = async () => {
     try {
       setSubmitting(true);
-      const res = await submitReview({
+      const res = await apiService.reviews.submit({
         product: productId,
         rating: Number(rating),
         comment,
       });
       showSuccess(res.message || "Review submitted.");
-      const updated = await getReviewsForProduct(productId);
+      const updated = await apiService.reviews.getForProduct(productId);
       setReviews(updated);
       setComment("");
       setRating(5);

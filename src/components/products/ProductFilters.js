@@ -3,7 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import clsx from "clsx";
-import { getCategories } from "@/lib/api";
+import apiService from "@/lib/apiService";
 
 /* constants */
 const sizes = ["XS", "S", "M", "L", "XL", "XXL"];
@@ -43,7 +43,7 @@ export default function ProductFilters({ showCategory = true }) {
   useEffect(() => {
     (async () => {
       try {
-        const res = await getCategories();
+        const res = await apiService.categories.getAll();
         setTree(buildTree(res?.data || []));
       } catch (e) {
         console.error(e);

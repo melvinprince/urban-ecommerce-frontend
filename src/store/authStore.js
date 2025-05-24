@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import api from "@/lib/api";
-import useCartStore from "./cartStore";
+import apiService from "@/lib/apiService"; // Replace old API import
+import EventBus from "@/lib/eventBus"; // Import EventBus
 
 const useAuthStore = create((set) => ({
   isLoggedIn: false,
@@ -11,14 +11,15 @@ const useAuthStore = create((set) => ({
 
   login: async (credentials) => {
     try {
-      await api.post("/api/auth/login", credentials); // Cookie is set by backend
-      const res = await api.get("/api/auth/me"); // Fetch user info after login
+      await apiService.auth.login(credentials); // Updated API call
+      const res = await apiService.auth.getCurrentUser(); // Fetch user info after login
       set({
         isLoggedIn: true,
         token: null,
         user: res.data,
         hydrated: true,
       });
+      EventBus.emit("user:login", res.data); // Emit login event with user data
     } catch (err) {
       set({ isLoggedIn: false, token: null, user: null, hydrated: true });
       throw err;
@@ -27,17 +28,17 @@ const useAuthStore = create((set) => ({
 
   logout: async () => {
     try {
-      await api.post("/api/auth/logout"); // Call logout endpoint in backend
+      await apiService.auth.logout(); // Updated API call
     } catch (err) {
       console.warn("Logout failed:", err.message);
     }
     set({ isLoggedIn: false, token: null, user: null, hydrated: true });
-    useCartStore.getState().clearCart();
+    EventBus.emit("user:logout"); // Emit logout event
   },
 
   initializeAuth: async () => {
     try {
-      const res = await api.get("/api/auth/me");
+      const res = await apiService.auth.getCurrentUser(); // Updated API call
       set({
         isLoggedIn: true,
         token: null,
@@ -51,7 +52,7 @@ const useAuthStore = create((set) => ({
 
   refreshUser: async () => {
     try {
-      const res = await api.get("/api/auth/me");
+      const res = await apiService.auth.getCurrentUser(); // Updated API call
       set({
         isLoggedIn: true,
         token: null,

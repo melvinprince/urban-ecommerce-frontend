@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { getOrdersByEmail } from "@/lib/api";
+import apiService from "@/lib/apiService";
 import Link from "next/link";
 import Loader from "@/components/common/Loader";
 import usePopupStore from "@/store/popupStore";
@@ -20,7 +20,7 @@ export default function EmailOrdersPage() {
 
     async function fetchOrders() {
       try {
-        const data = await getOrdersByEmail(email);
+        const data = await apiService.order.getByEmail(email);
         setOrders(data);
       } catch (err) {
         showError(err.message || "Failed to fetch orders.");

@@ -15,7 +15,7 @@ import PaymentMethod from "@/components/checkout/PaymentMethod";
 import CouponInput from "@/components/checkout/CouponInput";
 import AddressSelector from "@/components/user/AddressSelector";
 
-import { placeOrder } from "@/lib/api";
+import apiService from "@/lib/apiService";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -115,7 +115,7 @@ export default function CheckoutPage() {
       // Build the concatenated address string to satisfy backend validation
       const fullAddress = `${address.street}, ${address.city}, ${address.postalCode}, ${address.country}`;
 
-      const data = await placeOrder({
+      const data = await apiService.orders.place({
         items,
         address: {
           ...address,

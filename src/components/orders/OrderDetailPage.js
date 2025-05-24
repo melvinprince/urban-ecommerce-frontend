@@ -6,7 +6,7 @@ import Loader from "@/components/common/Loader";
 import usePopupStore from "@/store/popupStore";
 import InvoiceDownloadButton from "../invoice/InvoiceDownloadButton";
 import EditOrderFormModal from "@/components/orders/EditOrderFormModal";
-import { cancelOrder, cancelOrderAsGuest, getOrderByCustomId } from "@/lib/api";
+import apiService from "@/lib/apiService";
 import useAuthStore from "@/store/authStore";
 
 export default function OrderDetailPage() {
@@ -21,7 +21,7 @@ export default function OrderDetailPage() {
   useEffect(() => {
     async function fetchOrder() {
       try {
-        const data = await getOrderByCustomId(id);
+        const data = await apiService.orders.getByCustomId(id);
         setOrder(data);
       } catch (err) {
         showError(err.message || "Failed to fetch order");
@@ -41,7 +41,7 @@ export default function OrderDetailPage() {
 
     try {
       if (auth?.isLoggedIn) {
-        const updated = await cancelOrder(order.customOrderId);
+        const updated = await apiService.orders.cancel(order.customOrderId);
         showSuccess("Order cancelled successfully");
         setOrder(updated);
       } else {
@@ -49,7 +49,7 @@ export default function OrderDetailPage() {
         if (!email || !email.trim())
           return showError("Email is required to cancel the order.");
 
-        const updated = await cancelOrderAsGuest({
+        const updated = await apiService.orders.cancelGuest({
           customOrderId: order.customOrderId,
           email: email.trim(),
         });

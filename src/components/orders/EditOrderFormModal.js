@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { editOrder, getUserAddresses } from "@/lib/api";
+import apiService from "@/lib/apiService";
 import usePopupStore from "@/store/popupStore";
 import useAuthStore from "@/store/authStore";
 
@@ -20,7 +20,7 @@ export default function EditOrderFormModal({ order, onClose, onSuccess }) {
 
     async function fetchAddresses() {
       try {
-        const res = await getUserAddresses();
+        const res = await apiService.addresses.get();
         const valid = Array.isArray(res.data) ? res.data.filter(Boolean) : [];
         setAddresses(valid);
       } catch (err) {
@@ -59,7 +59,10 @@ export default function EditOrderFormModal({ order, onClose, onSuccess }) {
         payload.email = email.trim();
       }
 
-      const updated = await editOrder(order.customOrderId, payload);
+      const updated = await apiService.orders.edit(
+        order.customOrderId,
+        payload
+      );
       showSuccess("Order updated");
       onSuccess(updated);
       onClose();

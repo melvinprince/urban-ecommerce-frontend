@@ -5,7 +5,7 @@ import { useParams, useSearchParams, useRouter } from "next/navigation";
 import ProductGrid from "@/components/products/ProductGrid";
 import ProductFilters from "@/components/products/ProductFilters";
 import Loader from "@/components/common/Loader";
-import { getProducts } from "@/lib/api";
+import apiService from "@/lib/apiService";
 
 export default function CategoryProductsContent() {
   const { slug } = useParams(); // /categories/:slug
@@ -33,7 +33,10 @@ export default function CategoryProductsContent() {
         });
 
         // add the locked category for backend only
-        const res = await getProducts({ ...obj, category: slug });
+        const res = await apiService.products.getAll({
+          ...obj,
+          category: slug,
+        });
 
         setProducts(res.data || []);
         setTotal(res.meta?.pages || 1); // meta.pages from backend

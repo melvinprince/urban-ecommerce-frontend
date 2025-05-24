@@ -1,7 +1,6 @@
-// frontend/src/store/checkoutStore.js
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { applyCoupon as apiApplyCoupon } from "@/lib/api";
+import apiService from "@/lib/apiService"; // 🆕 Use centralized API service
 
 const useCheckoutStore = create(
   persist(
@@ -49,14 +48,16 @@ const useCheckoutStore = create(
 
       setSubtotal: (amount) => set({ subtotal: amount }),
 
-      // use the named export from lib/api.js
       applyCoupon: async (code) => {
         const subtotal = get().subtotal;
         const email = get().address.email; // <— include email
         try {
-          const res = await apiApplyCoupon(code, subtotal, email);
-          // res.data is { code, type, value, discount }
-          set({ coupon: res.data, error: null });
+          const res = await apiService.coupon.applyCoupon(
+            code,
+            subtotal,
+            email
+          ); // 🆕 Use apiService
+          set({ coupon: res, error: null });
         } catch (err) {
           set({
             error:

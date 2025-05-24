@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
-import { getTicketById, replyToTicket } from "@/lib/api";
+import apiService from "@/lib/apiService"; // Updated import
 import usePopupStore from "@/store/popupStore";
 import TicketMessageThread from "@/components/support/TicketMessageThread";
 import TicketReplyForm from "@/components/support/TicketReplyForm";
@@ -19,7 +19,7 @@ export default function TicketConversation() {
   useEffect(() => {
     async function fetch() {
       try {
-        const res = await getTicketById(ticketId);
+        const res = await apiService.tickets.getById(ticketId); // Updated
         setTicket(res);
       } catch (err) {
         showError("Failed to fetch ticket");
@@ -32,11 +32,10 @@ export default function TicketConversation() {
 
   const handleReply = async (formData) => {
     try {
-      const updated = await replyToTicket(ticketId, formData);
+      const updated = await apiService.tickets.reply(ticketId, formData); // Updated
       showSuccess("Reply sent");
       setTicket(updated);
 
-      // Auto scroll to bottom
       setTimeout(() => {
         threadRef.current?.scrollIntoView({ behavior: "smooth" });
       }, 100);

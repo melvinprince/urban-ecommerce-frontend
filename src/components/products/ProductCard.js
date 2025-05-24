@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { Heart, HeartOff } from "lucide-react";
 import useCartStore from "@/store/cartStore";
 import useWishlistStore from "@/store/wishlistStore";
-import { getProductBySlug } from "@/lib/api";
+import apiService from "@/lib/apiService";
 import usePopupStore from "@/store/popupStore"; // 🆕 GLOBAL popup store (NOT local state!)
 
 export default function ProductCard({ product }) {
@@ -38,7 +38,7 @@ export default function ProductCard({ product }) {
         product.stock == null;
 
       if (needsFetch) {
-        const { data } = await getProductBySlug(product.slug);
+        const { data } = await apiService.products.getBySlug(product.slug);
         full = data;
       }
 

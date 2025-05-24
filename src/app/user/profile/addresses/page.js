@@ -1,11 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  getUserAddresses,
-  updateUserAddress,
-  deleteUserAddress,
-} from "@/lib/api";
+import apiService from "@/lib/apiService";
 
 import AddressFormModal from "@/components/user/AddressFormModal";
 import usePopupStore from "@/store/popupStore";
@@ -20,7 +16,7 @@ export default function AddressBookPage() {
 
   const fetchAddresses = async () => {
     try {
-      const res = await getUserAddresses();
+      const res = await apiService.address.getAll();
       const data = Array.isArray(res.data) ? res.data : [];
       setAddresses(data);
     } catch (e) {
@@ -40,7 +36,7 @@ export default function AddressBookPage() {
     if (!confirm) return;
 
     try {
-      await deleteUserAddress(index);
+      await apiService.address.delete(editingIndex);
       showSuccess("Address deleted successfully");
       setAddresses((prev) => prev.filter((_, i) => i !== index));
     } catch (err) {
@@ -52,7 +48,7 @@ export default function AddressBookPage() {
     try {
       if (editingIndex !== null) {
         // update existing
-        await updateUserAddress(editingIndex, newAddress);
+        await apiService.address.update(editingIndex, newAddress);
         setAddresses((prev) =>
           prev.map((addr, i) =>
             i === editingIndex ? { ...addr, ...newAddress } : addr

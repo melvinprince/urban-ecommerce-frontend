@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getMyOrders, createTicket } from "@/lib/api";
+import apiService from "@/lib/apiService"; // Updated import
 import usePopupStore from "@/store/popupStore";
 import { useRouter } from "next/navigation";
 
@@ -19,7 +19,7 @@ export default function NewTicketForm() {
   useEffect(() => {
     async function fetchOrders() {
       try {
-        const data = await getMyOrders();
+        const data = await apiService.orders.getMine(); // Updated
         setOrders(data || []);
       } catch (err) {
         console.error("Failed to load orders", err);
@@ -72,7 +72,7 @@ export default function NewTicketForm() {
       if (orderRef) formData.append("orderRef", orderRef);
       files.forEach((file) => formData.append("files", file));
 
-      await createTicket(formData);
+      await apiService.tickets.create(formData); // Updated
       showSuccess("Support ticket created.");
       router.push("/user/tickets");
     } catch (err) {

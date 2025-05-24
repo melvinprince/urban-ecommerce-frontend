@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { addUserAddress } from "@/lib/api";
+import apiService from "@/lib/apiService"; // Updated import
 import usePopupStore from "@/store/popupStore";
 
 export default function AddressFormModal({
@@ -48,7 +48,7 @@ export default function AddressFormModal({
         await onSuccess(payload);
         showSuccess("Address updated successfully");
       } else {
-        const res = await addUserAddress(payload);
+        const res = await apiService.addresses.add(payload); // Updated API call
         const newAddress = res.data.at(-1);
         showSuccess("Address added successfully");
         onSuccess(newAddress);

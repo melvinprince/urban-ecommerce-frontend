@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getUserAddresses } from "@/lib/api";
+import apiService from "@/lib/apiService"; // Updated import
 import AddressFormModal from "./AddressFormModal";
 
 export default function AddressSelector({ address, setAddress }) {
@@ -11,7 +11,7 @@ export default function AddressSelector({ address, setAddress }) {
 
   const fetchAddresses = async () => {
     try {
-      const res = await getUserAddresses();
+      const res = await apiService.addresses.get(); // Updated API call
       setAddresses(res.data);
     } catch (e) {
       console.error("❌ [AddressSelector] fetch failed", e);
