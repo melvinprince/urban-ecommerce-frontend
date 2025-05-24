@@ -25,23 +25,29 @@ const TicketMessageThread = forwardRef(({ messages = [] }, ref) => {
               {msg.attachments.map((file, idx) => (
                 <div key={idx}>
                   {file.type === "image" ? (
-                    <img
-                      src={file.url}
-                      alt="Attachment"
+                    <a
+                      href={`${process.env.NEXT_PUBLIC_BACKEND_URL}${file.url}`}
+                      target="_blank"
                       className="max-w-xs rounded"
-                    />
+                    >
+                      Image
+                    </a>
                   ) : file.type === "pdf" ? (
                     <a
-                      href={file.url}
+                      href={`${process.env.NEXT_PUBLIC_BACKEND_URL}${file.url}`}
                       target="_blank"
                       className="underline text-blue-700"
                     >
                       📄 PDF Attachment
                     </a>
                   ) : (
-                    <video controls className="max-w-xs rounded">
-                      <source src={file.url} type="video/mp4" />
-                    </video>
+                    <a
+                      className="max-w-xs rounded"
+                      href={`${process.env.NEXT_PUBLIC_BACKEND_URL}${file.url}`}
+                      target="_blank"
+                    >
+                      Video
+                    </a>
                   )}
                 </div>
               ))}
