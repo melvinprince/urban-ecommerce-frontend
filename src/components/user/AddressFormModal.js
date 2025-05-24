@@ -40,8 +40,7 @@ export default function AddressFormModal({
 
     setSubmitting(true);
 
-    const fullAddress = `${form.street}, ${form.city}, ${form.postalCode}, ${form.country}`;
-    const payload = { ...form, address: fullAddress };
+    const payload = { ...form };
 
     try {
       if (initialData) {
