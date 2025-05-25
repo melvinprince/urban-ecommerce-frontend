@@ -14,7 +14,7 @@ export default function AddressBookPage() {
 
   const { showSuccess, showError } = usePopupStore();
 
-  const fetchAddresses = async () => {
+  const fetchAddresses = useCallback(async () => {
     try {
       const res = await apiService.addresses.get();
       const data = Array.isArray(res.data) ? res.data : [];
@@ -25,11 +25,11 @@ export default function AddressBookPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showError]);
 
   useEffect(() => {
     fetchAddresses();
-  }, []);
+  }, [fetchAddresses]);
 
   const handleDelete = async (index) => {
     const confirm = window.confirm("Delete this address?");

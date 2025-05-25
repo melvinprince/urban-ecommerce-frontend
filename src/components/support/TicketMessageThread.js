@@ -2,6 +2,7 @@
 
 import React, { forwardRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 const TicketMessageThread = forwardRef(({ messages = [] }, ref) => {
   return (
@@ -25,29 +26,29 @@ const TicketMessageThread = forwardRef(({ messages = [] }, ref) => {
               {msg.attachments.map((file, idx) => (
                 <div key={idx}>
                   {file.type === "image" ? (
-                    <a
+                    <Link
                       href={`${process.env.NEXT_PUBLIC_BACKEND_URL}${file.url}`}
                       target="_blank"
                       className="max-w-xs rounded"
                     >
                       Image
-                    </a>
+                    </Link>
                   ) : file.type === "pdf" ? (
-                    <a
+                    <Link
                       href={`${process.env.NEXT_PUBLIC_BACKEND_URL}${file.url}`}
                       target="_blank"
                       className="underline text-blue-700"
                     >
                       📄 PDF Attachment
-                    </a>
+                    </Link>
                   ) : (
-                    <a
+                    <Link
                       className="max-w-xs rounded"
                       href={`${process.env.NEXT_PUBLIC_BACKEND_URL}${file.url}`}
                       target="_blank"
                     >
                       Video
-                    </a>
+                    </Link>
                   )}
                 </div>
               ))}

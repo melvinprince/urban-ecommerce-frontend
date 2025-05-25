@@ -52,7 +52,7 @@ export default function SearchPage() {
   return (
     <div className="p-6 min-h-screen">
       <h1 className="text-2xl font-semibold mb-6">
-        Search results for "<span className="italic">{query}</span>"
+        Search results for &quot;<span className="italic">{query}</span>&quot;
       </h1>
 
       <div className="flex flex-col md:flex-row gap-8">

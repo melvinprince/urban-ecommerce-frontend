@@ -10,12 +10,12 @@ export default function HelpSupportPage() {
         <div className="mb-6">
           <p className="text-gray-700">
             <strong>Registered Users:</strong> Please{" "}
-            <a
+            <Link
               href="/user/profile/orders"
               className="text-blue-600 underline hover:text-blue-800"
             >
               log in
-            </a>{" "}
+            </Link>{" "}
             to view your full order history.
           </p>
         </div>

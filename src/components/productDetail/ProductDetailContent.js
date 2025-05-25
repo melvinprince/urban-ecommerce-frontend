@@ -31,7 +31,7 @@ export default function ProductDetailContent() {
     }
 
     if (slug) fetchProduct();
-  }, [slug]);
+  }, [slug, addItem]);
 
   if (loading) return <Loader />;
   if (error) return <div className="p-6 text-red-500">Error: {error}</div>;
