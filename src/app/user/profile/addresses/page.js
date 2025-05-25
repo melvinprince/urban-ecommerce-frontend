@@ -17,8 +17,6 @@ export default function AddressBookPage() {
   const fetchAddresses = async () => {
     try {
       const res = await apiService.addresses.get();
-      console.log("[AddressBookPage] 🌐 API response:", res);
-
       const data = Array.isArray(res.data) ? res.data : [];
       setAddresses(data);
     } catch (e) {
@@ -38,7 +36,7 @@ export default function AddressBookPage() {
     if (!confirm) return;
 
     try {
-      await apiService.address.delete(editingIndex);
+      await apiService.addresses.delete(index);
       showSuccess("Address deleted successfully");
       setAddresses((prev) => prev.filter((_, i) => i !== index));
     } catch (err) {
@@ -49,8 +47,9 @@ export default function AddressBookPage() {
   const handleSave = async (newAddress) => {
     try {
       if (editingIndex !== null) {
-        // update existing
-        await apiService.address.update(editingIndex, newAddress);
+        // Update existing by index
+        await apiService.addresses.update(editingIndex, newAddress);
+
         setAddresses((prev) =>
           prev.map((addr, i) =>
             i === editingIndex ? { ...addr, ...newAddress } : addr
@@ -58,10 +57,11 @@ export default function AddressBookPage() {
         );
         showSuccess("Address updated successfully");
       } else {
-        // new address already saved by modal's API call
-        setAddresses((prev) => [...prev, newAddress]);
+        // Add new address (already saved by modal API call)
+        await fetchAddresses();
         showSuccess("Address added successfully");
       }
+
       setShowModal(false);
       setEditingIndex(null);
     } catch (err) {
@@ -90,9 +90,9 @@ export default function AddressBookPage() {
         <p className="text-gray-600">You have no saved addresses yet.</p>
       ) : (
         <div className="space-y-4">
-          {addresses.map((addr, i) => (
+          {addresses.map((addr, index) => (
             <div
-              key={i}
+              key={index} // ✅ Use index as key (backend expects index)
               className="border rounded p-4 relative bg-white shadow-sm"
             >
               <div className="flex justify-between items-center">
@@ -107,7 +107,7 @@ export default function AddressBookPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => {
-                      setEditingIndex(i);
+                      setEditingIndex(index);
                       setShowModal(true);
                     }}
                     className="text-blue-600 hover:underline text-sm"
@@ -115,7 +115,7 @@ export default function AddressBookPage() {
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(i)}
+                    onClick={() => handleDelete(index)}
                     className="text-red-600 hover:underline text-sm"
                   >
                     Delete

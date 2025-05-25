@@ -37,8 +37,9 @@ export default function CategoryProductsContent() {
           ...obj,
           category: slug,
         });
+        console.log("Fetched products:", res);
 
-        setProducts(res.data || []);
+        setProducts(res.data.products || []);
         setTotal(res.meta?.pages || 1); // meta.pages from backend
       } catch (err) {
         setError(err.message || "Failed to load products.");

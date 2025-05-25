@@ -1,4 +1,3 @@
-// frontend/src/app/checkout/page.jsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -43,6 +42,10 @@ export default function CheckoutPage() {
 
   const [error, setError] = useState("");
 
+  // Extract coupon details safely
+  const couponData = coupon?.[0] || null;
+  const discountAmount = coupon?.[1] || 0;
+
   // Fetch cart on mount
   useEffect(() => {
     fetchCart();
@@ -80,8 +83,18 @@ export default function CheckoutPage() {
     }));
   };
 
+  const calculateFinalAmount = () => {
+    const items = buildItems();
+    const total = items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+    return (total - discountAmount).toFixed(2);
+  };
+
   const handlePlaceOrder = async () => {
     setError("");
+
     const requiredFields = [
       "fullName",
       "email",
@@ -109,22 +122,17 @@ export default function CheckoutPage() {
         (sum, item) => sum + item.price * item.quantity,
         0
       );
-      const discount = coupon?.discount || 0;
-      const finalAmount = totalAmount - discount;
+      const finalAmount = totalAmount - discountAmount;
 
-      // Build the concatenated address string to satisfy backend validation
       const fullAddress = `${address.street}, ${address.city}, ${address.postalCode}, ${address.country}`;
 
       const data = await apiService.orders.place({
         items,
-        address: {
-          ...address,
-          address: fullAddress,
-        },
+        address: { ...address, address: fullAddress },
         paymentMethod,
         isPaid: paymentMethod === "paypal",
         totalAmount: finalAmount,
-        couponCode: coupon?.code,
+        couponCode: couponData?.code,
       });
 
       if (buyNowProduct) {
@@ -177,6 +185,12 @@ export default function CheckoutPage() {
       <section className="mt-6">
         <h2 className="font-semibold mb-2">Have a coupon?</h2>
         <CouponInput />
+        {couponData && (
+          <p className="text-sm text-green-600">
+            Discount applied: QAR {discountAmount.toFixed(2)} ({couponData.code}
+            )
+          </p>
+        )}
       </section>
 
       <PaymentMethod
@@ -193,9 +207,7 @@ export default function CheckoutPage() {
       >
         {paymentMethod === "paypal"
           ? "Please use the PayPal button below"
-          : `Place Order (QAR ${(subtotal - (coupon?.discount || 0)).toFixed(
-              2
-            )})`}
+          : `Place Order (QAR ${calculateFinalAmount()})`}
       </button>
 
       {paymentMethod === "paypal" && (
@@ -203,8 +215,9 @@ export default function CheckoutPage() {
           amount={
             buyNowProduct
               ? (buyNowProduct.discountPrice ?? buyNowProduct.price) *
-                buyNowProduct.quantity
-              : subtotal - (coupon?.discount || 0)
+                  buyNowProduct.quantity -
+                discountAmount
+              : subtotal - discountAmount
           }
           onSuccess={handlePlaceOrder}
           onError={() => setError("PayPal checkout failed.")}

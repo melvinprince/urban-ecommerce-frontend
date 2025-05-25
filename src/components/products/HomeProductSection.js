@@ -15,8 +15,10 @@ export default function HomeProductSection({ title, query = {} }) {
     (async () => {
       try {
         const res = await apiService.products.getAll({ ...query });
+        console.log("Fetched products for:", res);
+
         if (mounted) {
-          setProducts(res.data || []);
+          setProducts(res.data.products || []);
         }
       } catch (err) {
         console.error("❌ Failed to load products for:", title, err.message);

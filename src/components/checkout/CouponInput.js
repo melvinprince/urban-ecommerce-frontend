@@ -23,12 +23,11 @@ export default function CouponInput() {
     }
     await applyCoupon(code.trim().toUpperCase());
     const { error: err, coupon: cpn } = useCheckoutStore.getState();
+
     if (err) {
       showError(err);
     } else if (cpn) {
-      showSuccess(
-        `Coupon ${cpn.code} applied! You saved QAR ${cpn.discount.toFixed(2)}.`
-      );
+      showSuccess(`Coupon ${cpn[0].code} applied! You saved QAR ${cpn[1]}.`);
       setCode("");
     }
   };
@@ -43,8 +42,8 @@ export default function CouponInput() {
       {coupon ? (
         <>
           <div className="flex-grow text-sm">
-            Applied <strong>{coupon.code}</strong> — saved{" "}
-            <strong>QAR {coupon.discount.toFixed(2)}</strong>
+            Applied <strong>{coupon[0].code}</strong> — saved{" "}
+            <strong>QAR {coupon[1]}</strong>
           </div>
           <button
             onClick={handleRemove}

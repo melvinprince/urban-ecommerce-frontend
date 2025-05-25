@@ -93,8 +93,7 @@ const apiService = {
   addresses: {
     get: () => api.get("/api/user/addresses"),
     add: (data) => api.post("/api/user/addresses", data),
-    update: (index, data) =>
-      api.put(`/api/user/addresses/${index}`, { address: data }),
+    update: (index, data) => api.put(`/api/user/addresses/${index}`, data),
     delete: (index) => api.delete(`/api/user/addresses/${index}`),
   },
 
@@ -118,7 +117,7 @@ const apiService = {
   },
 
   coupons: {
-    apply: (code, subtotal, email) =>
+    applyCoupon: (code, subtotal, email) =>
       api.post("/api/coupons/apply", { code, subtotal, email }),
   },
 };

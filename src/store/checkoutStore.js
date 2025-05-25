@@ -52,12 +52,13 @@ const useCheckoutStore = create(
         const subtotal = get().subtotal;
         const email = get().address.email; // <— include email
         try {
-          const res = await apiService.coupon.applyCoupon(
+          const res = await apiService.coupons.applyCoupon(
             code,
             subtotal,
             email
           ); // 🆕 Use apiService
-          set({ coupon: res, error: null });
+
+          set({ coupon: [res.data.coupon, res.data.discount], error: null });
         } catch (err) {
           set({
             error:
