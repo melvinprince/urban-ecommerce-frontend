@@ -49,6 +49,7 @@ export default function AdminProductsPage() {
         <table className="w-full table-auto border-collapse border">
           <thead>
             <tr className="bg-gray-100">
+              <th className="p-2 border">Image</th>
               <th className="p-2 border">Title</th>
               <th className="p-2 border">Price</th>
               <th className="p-2 border">Stock</th>
@@ -58,9 +59,30 @@ export default function AdminProductsPage() {
           <tbody>
             {products.map((product) => (
               <tr key={product._id}>
-                <td className="p-2 border">{product.title}</td>
+                <td className="p-2 border">
+                  {product.images?.length > 0 ? (
+                    <img
+                      src={product.images[0]}
+                      alt={product.title}
+                      className="w-16 h-16 object-cover rounded"
+                    />
+                  ) : (
+                    <span>No image</span>
+                  )}
+                </td>
+                <td className="p-2 border">
+                  <a
+                    href={`/product/${product.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline"
+                  >
+                    {product.title}
+                  </a>
+                </td>
                 <td className="p-2 border">${product.price}</td>
                 <td className="p-2 border">{product.stock}</td>
+
                 <td className="p-2 border">
                   <Link
                     href={`/admin/products/${product._id}/edit`}
@@ -79,7 +101,7 @@ export default function AdminProductsPage() {
             ))}
             {products.length === 0 && (
               <tr>
-                <td className="p-2 border text-center" colSpan="4">
+                <td className="p-2 border text-center" colSpan="5">
                   No products found.
                 </td>
               </tr>

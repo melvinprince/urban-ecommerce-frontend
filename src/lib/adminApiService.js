@@ -45,6 +45,10 @@ const adminApiService = {
         headers: { "Content-Type": "multipart/form-data" },
       }),
     delete: (id) => adminApi.delete(`/api/admin/products/${id}`),
+    getReviews: (productId) =>
+      adminApi.get(`/api/admin/products/${productId}/reviews`),
+    deleteReview: (reviewId) =>
+      adminApi.delete(`/api/admin/products/reviews/${reviewId}`),
   },
 
   categories: {
