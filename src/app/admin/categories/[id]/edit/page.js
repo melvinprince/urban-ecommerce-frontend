@@ -23,8 +23,10 @@ export default function EditCategoryPage() {
         setFormData({
           name: cat.name,
           slug: cat.slug,
-          parent: cat.parent || "",
+          parent: cat.parent?._id || "",
           description: cat.description || "",
+          metaTitle: cat.metaTitle || "",
+          metaDescription: cat.metaDescription || "",
           image: null,
         });
         setCategories(categoriesRes.data.filter((c) => c._id !== id)); // Avoid self as parent
@@ -37,8 +39,8 @@ export default function EditCategoryPage() {
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    if (name === "image") {
-      setFormData((prev) => ({ ...prev, image: files[0] }));
+    if (files) {
+      setFormData((prev) => ({ ...prev, [name]: files[0] }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -104,6 +106,25 @@ export default function EditCategoryPage() {
           placeholder="Description"
           className="border p-2 w-full"
         />
+
+        <input
+          name="metaTitle"
+          value={formData.metaTitle}
+          onChange={handleChange}
+          placeholder="Meta Title (SEO)"
+          className="border p-2 w-full"
+        />
+        <textarea
+          name="metaDescription"
+          value={formData.metaDescription}
+          onChange={handleChange}
+          placeholder="Meta Description (SEO)"
+          className="border p-2 w-full"
+        />
+
+        <label className="block font-semibold">
+          Thumbnail Image (optional)
+        </label>
         <input
           type="file"
           name="image"

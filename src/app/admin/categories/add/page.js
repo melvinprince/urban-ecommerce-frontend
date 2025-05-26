@@ -11,6 +11,8 @@ export default function AddCategoryPage() {
     slug: "",
     parent: "",
     description: "",
+    metaTitle: "",
+    metaDescription: "",
     image: null,
   });
   const [categories, setCategories] = useState([]);
@@ -31,8 +33,8 @@ export default function AddCategoryPage() {
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    if (name === "image") {
-      setFormData((prev) => ({ ...prev, image: files[0] }));
+    if (files) {
+      setFormData((prev) => ({ ...prev, [name]: files[0] }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -92,6 +94,21 @@ export default function AddCategoryPage() {
           onChange={handleChange}
           className="border p-2 w-full"
         />
+
+        <input
+          name="metaTitle"
+          placeholder="Meta Title (SEO)"
+          onChange={handleChange}
+          className="border p-2 w-full"
+        />
+        <textarea
+          name="metaDescription"
+          placeholder="Meta Description (SEO)"
+          onChange={handleChange}
+          className="border p-2 w-full"
+        />
+
+        <label className="block font-semibold">Thumbnail Image</label>
         <input
           type="file"
           name="image"
