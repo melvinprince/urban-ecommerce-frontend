@@ -51,7 +51,6 @@ export default function Page() {
     try {
       const { message } = await apiService.auth.login({ email, password });
       await refreshUser(); // 🌟 Fetch fresh user info after login
-
       showSuccess(message || "Logged in successfully!");
       const destination = localStorage.getItem("lastPage") || "/";
       router.push(destination);

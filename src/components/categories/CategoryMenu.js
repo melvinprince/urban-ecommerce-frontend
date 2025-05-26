@@ -12,8 +12,7 @@ export default function CategoryMenu() {
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const API_URL =
-          process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+        const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
         const res = await fetch(`${API_URL}/api/categories`);
         if (!res.ok) throw new Error(`Status ${res.status}`);
         const { success, data } = await res.json();
