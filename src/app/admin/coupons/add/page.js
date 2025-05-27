@@ -4,17 +4,19 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import adminApiService from "@/lib/adminApiService";
 import usePopupStore from "@/store/popupStore";
+import Loader from "@/components/common/Loader";
 
 export default function AddCouponPage() {
   const [formData, setFormData] = useState({
     code: "",
     type: "percentage",
     value: "",
-    usageLimit: 1,
-    minSubtotal: 0,
+    usageLimit: "",
+    minSubtotal: "",
     startDate: "",
     expiryDate: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { showError, showSuccess } = usePopupStore();
   const router = useRouter();
 
@@ -25,13 +27,25 @@ export default function AddCouponPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (
+      !formData.code ||
+      !formData.value ||
+      !formData.startDate ||
+      !formData.expiryDate
+    ) {
+      showError("Please fill all required fields");
+      return;
+    }
     try {
+      setIsSubmitting(true);
       const data = { ...formData, code: formData.code.toUpperCase() };
       await adminApiService.coupons.create(data);
       showSuccess("Coupon created");
       router.push("/admin/coupons");
     } catch (err) {
       showError(err.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -46,7 +60,6 @@ export default function AddCouponPage() {
           onChange={handleChange}
           className="border p-2 w-full"
         />
-
         <label className="block font-semibold">Type</label>
         <select
           name="type"
@@ -57,7 +70,6 @@ export default function AddCouponPage() {
           <option value="percentage">Percentage</option>
           <option value="fixed">Fixed</option>
         </select>
-
         <input
           name="value"
           type="number"
@@ -82,7 +94,6 @@ export default function AddCouponPage() {
           onChange={handleChange}
           className="border p-2 w-full"
         />
-
         <label className="block font-semibold">Start Date</label>
         <input
           name="startDate"
@@ -91,7 +102,6 @@ export default function AddCouponPage() {
           onChange={handleChange}
           className="border p-2 w-full"
         />
-
         <label className="block font-semibold">Expiry Date</label>
         <input
           name="expiryDate"
@@ -100,12 +110,12 @@ export default function AddCouponPage() {
           onChange={handleChange}
           className="border p-2 w-full"
         />
-
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+          disabled={isSubmitting}
+          className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
         >
-          Create Coupon
+          {isSubmitting ? "Creating..." : "Create Coupon"}
         </button>
       </form>
     </div>

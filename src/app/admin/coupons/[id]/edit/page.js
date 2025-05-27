@@ -4,16 +4,20 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import adminApiService from "@/lib/adminApiService";
 import usePopupStore from "@/store/popupStore";
+import Loader from "@/components/common/Loader";
 
 export default function EditCouponPage() {
   const { id } = useParams();
   const [formData, setFormData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { showError, showSuccess } = usePopupStore();
   const router = useRouter();
 
   useEffect(() => {
     const fetchCoupon = async () => {
       try {
+        setIsLoading(true);
         const res = await adminApiService.coupons.getById(id);
         const c = res.data;
         setFormData({
@@ -22,11 +26,13 @@ export default function EditCouponPage() {
           value: c.value,
           usageLimit: c.usageLimit,
           minSubtotal: c.minSubtotal,
-          startDate: c.startDate.slice(0, 10), // format as YYYY-MM-DD
+          startDate: c.startDate.slice(0, 10),
           expiryDate: c.expiryDate.slice(0, 10),
         });
       } catch (err) {
         showError(err.message);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchCoupon();
@@ -39,17 +45,43 @@ export default function EditCouponPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (
+      !formData.code ||
+      !formData.value ||
+      !formData.startDate ||
+      !formData.expiryDate
+    ) {
+      showError("Please fill all required fields");
+      return;
+    }
     try {
+      setIsSubmitting(true);
       const data = { ...formData, code: formData.code.toUpperCase() };
       await adminApiService.coupons.update(id, data);
       showSuccess("Coupon updated");
       router.push("/admin/coupons");
     } catch (err) {
       showError(err.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  if (!formData) return <div>Loading...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader />
+      </div>
+    );
+  }
+
+  if (!formData) {
+    return (
+      <div className="text-center text-gray-500">
+        Failed to load coupon. Please try again.
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -62,7 +94,6 @@ export default function EditCouponPage() {
           placeholder="Code"
           className="border p-2 w-full"
         />
-
         <label className="block font-semibold">Type</label>
         <select
           name="type"
@@ -73,7 +104,6 @@ export default function EditCouponPage() {
           <option value="percentage">Percentage</option>
           <option value="fixed">Fixed</option>
         </select>
-
         <input
           name="value"
           type="number"
@@ -98,7 +128,6 @@ export default function EditCouponPage() {
           placeholder="Minimum Subtotal"
           className="border p-2 w-full"
         />
-
         <label className="block font-semibold">Start Date</label>
         <input
           name="startDate"
@@ -107,7 +136,6 @@ export default function EditCouponPage() {
           onChange={handleChange}
           className="border p-2 w-full"
         />
-
         <label className="block font-semibold">Expiry Date</label>
         <input
           name="expiryDate"
@@ -116,12 +144,12 @@ export default function EditCouponPage() {
           onChange={handleChange}
           className="border p-2 w-full"
         />
-
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+          disabled={isSubmitting}
+          className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
         >
-          Update Coupon
+          {isSubmitting ? "Updating..." : "Update Coupon"}
         </button>
       </form>
     </div>
