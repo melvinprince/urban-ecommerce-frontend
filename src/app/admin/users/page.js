@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import adminApiService from "@/lib/adminApiService";
 import usePopupStore from "@/store/popupStore";
+import useConfirmStore from "@/store/useConfirmStore";
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
   const { showError, showSuccess } = usePopupStore();
+  const { openConfirm } = useConfirmStore();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -20,34 +22,44 @@ export default function AdminUsersPage() {
     fetchUsers();
   }, [showError]);
 
-  const handleRoleToggle = async (user) => {
+  const handleRoleToggle = (user) => {
     const newRole = user.role === "adm" ? "usr" : "adm";
-    if (!confirm(`Change role of ${user.name} to ${newRole}?`)) return;
-    try {
-      await adminApiService.users.update(user._id, { role: newRole });
-      setUsers((prev) =>
-        prev.map((u) => (u._id === user._id ? { ...u, role: newRole } : u))
-      );
-      showSuccess(`Role updated to ${newRole}`);
-    } catch (err) {
-      showError(err.message);
-    }
+    openConfirm({
+      message: `Change role of ${user.name} to ${newRole}?`,
+      onConfirm: async () => {
+        try {
+          await adminApiService.users.update(user._id, { role: newRole });
+          setUsers((prev) =>
+            prev.map((u) => (u._id === user._id ? { ...u, role: newRole } : u))
+          );
+          showSuccess(`Role updated to ${newRole}`);
+        } catch (err) {
+          showError(err.message);
+        }
+      },
+    });
   };
 
-  const handleBanToggle = async (user) => {
+  const handleBanToggle = (user) => {
     const action = user.banned ? "unban" : "ban";
-    if (!confirm(`Are you sure you want to ${action} ${user.name}?`)) return;
-    try {
-      await adminApiService.users.update(user._id, { banned: !user.banned });
-      setUsers((prev) =>
-        prev.map((u) =>
-          u._id === user._id ? { ...u, banned: !user.banned } : u
-        )
-      );
-      showSuccess(`User ${action}ned`);
-    } catch (err) {
-      showError(err.message);
-    }
+    openConfirm({
+      message: `Are you sure you want to ${action} ${user.name}?`,
+      onConfirm: async () => {
+        try {
+          await adminApiService.users.update(user._id, {
+            banned: !user.banned,
+          });
+          setUsers((prev) =>
+            prev.map((u) =>
+              u._id === user._id ? { ...u, banned: !user.banned } : u
+            )
+          );
+          showSuccess(`User ${action}ned`);
+        } catch (err) {
+          showError(err.message);
+        }
+      },
+    });
   };
 
   return (

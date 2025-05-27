@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import adminApiService from "@/lib/adminApiService";
 import usePopupStore from "@/store/popupStore";
+import useConfirmStore from "@/store/useConfirmStore";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState([]);
   const { showError, showSuccess } = usePopupStore();
+  const { openConfirm } = useConfirmStore();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -22,15 +24,19 @@ export default function AdminProductsPage() {
     fetchProducts();
   }, [showError]);
 
-  const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this product?")) return;
-    try {
-      await adminApiService.products.delete(id);
-      setProducts(products.filter((p) => p._id !== id));
-      showSuccess("Product deleted");
-    } catch (err) {
-      showError(err.message);
-    }
+  const handleDelete = (id) => {
+    openConfirm({
+      message: "Are you sure you want to delete this product?",
+      onConfirm: async () => {
+        try {
+          await adminApiService.products.delete(id);
+          setProducts(products.filter((p) => p._id !== id));
+          showSuccess("Product deleted");
+        } catch (err) {
+          showError(err.message);
+        }
+      },
+    });
   };
 
   return (

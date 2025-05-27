@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import adminApiService from "@/lib/adminApiService";
 import usePopupStore from "@/store/popupStore";
+import useConfirmStore from "@/store/useConfirmStore";
 import CategoryTable from "@/components/admin/categories/CategoryTable";
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState([]);
   const { showError, showSuccess } = usePopupStore();
+  const { openConfirm } = useConfirmStore();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -23,15 +25,19 @@ export default function AdminCategoriesPage() {
     fetchCategories();
   }, [showError]);
 
-  const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this category?")) return;
-    try {
-      await adminApiService.categories.delete(id);
-      setCategories((prev) => prev.filter((c) => c._id !== id));
-      showSuccess("Category deleted");
-    } catch (err) {
-      showError(err.message);
-    }
+  const handleDelete = (id) => {
+    openConfirm({
+      message: "Are you sure you want to delete this category?",
+      onConfirm: async () => {
+        try {
+          await adminApiService.categories.delete(id);
+          setCategories((prev) => prev.filter((c) => c._id !== id));
+          showSuccess("Category deleted");
+        } catch (err) {
+          showError(err.message);
+        }
+      },
+    });
   };
 
   return (
