@@ -64,13 +64,15 @@ const adminApiService = {
   },
 
   orders: {
-    getAll: () => adminApi.get("/api/admin/orders"),
+    getAll: (params = {}) => adminApi.get("/api/admin/orders", { params }),
+
     getById: (id) => adminApi.get(`/api/admin/orders/${id}`),
     update: (id, data) => adminApi.patch(`/api/admin/orders/${id}`, data),
     updatePayment: (id, data) =>
       adminApi.patch(`/api/admin/orders/${id}/payment`, data),
     cancel: (id) => adminApi.patch(`/api/admin/orders/${id}/cancel`),
     delete: (id) => adminApi.delete(`/api/admin/orders/${id}`),
+    getSummary: () => adminApi.get("/api/admin/orders/summary"),
   },
 
   coupons: {

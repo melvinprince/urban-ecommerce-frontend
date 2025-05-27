@@ -1,36 +1,70 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useState, useEffect } from "react";
 import adminApiService from "@/lib/adminApiService";
 import usePopupStore from "@/store/popupStore";
+import OrdersTable from "@/components/admin/orders/OrdersTable";
+import Loader from "@/components/common/Loader";
+import OrdersFilter from "@/components/admin/orders/OrdersFilter";
+import SummaryCards from "@/components/admin/orders/SummaryCards";
+import Pagination from "@/components/admin/orders/Pagination";
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState([]);
+  const [filters, setFilters] = useState({
+    email: "",
+    status: "",
+    isPaid: "",
+  });
+  const [pagination, setPagination] = useState({
+    totalOrders: 0,
+    totalPages: 1,
+    currentPage: 1,
+  });
+  const [summary, setSummary] = useState(null);
+  const [loading, setLoading] = useState(false);
+
   const { showError, showSuccess } = usePopupStore();
 
+  const fetchOrders = async (page = 1) => {
+    try {
+      setLoading(true);
+      const params = {
+        page,
+        ...filters,
+      };
+
+      const res = await adminApiService.orders.getAll(params);
+      setOrders(res.data.orders); // ✅ Fix here
+      setPagination(res.data.pagination);
+    } catch (err) {
+      showError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchOrders = async () => {
+    const fetchSummary = async () => {
       try {
-        const res = await adminApiService.orders.getAll();
-        setOrders(res.data);
+        const res = await adminApiService.orders.getSummary();
+        setSummary(res.data);
       } catch (err) {
         showError(err.message);
       }
     };
+    fetchSummary();
+  }, []);
 
-    fetchOrders();
-  }, [showError]);
+  useEffect(() => {
+    fetchOrders(1);
+  }, [filters]);
 
   const handleCancel = async (id) => {
     if (!confirm("Are you sure you want to cancel this order?")) return;
     try {
       await adminApiService.orders.cancel(id);
-      setOrders((prev) =>
-        prev.map((order) =>
-          order._id === id ? { ...order, status: "cancelled" } : order
-        )
-      );
+      fetchOrders(pagination.currentPage);
       showSuccess("Order cancelled");
     } catch (err) {
       showError(err.message);
@@ -40,56 +74,23 @@ export default function AdminOrdersPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Orders</h1>
-      <div className="overflow-x-auto">
-        <table className="w-full table-auto border-collapse border">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="p-2 border">Order ID</th>
-              <th className="p-2 border">User</th>
-              <th className="p-2 border">Amount</th>
-              <th className="p-2 border">Status</th>
-              <th className="p-2 border">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order) => (
-              <tr key={order._id}>
-                <td className="p-2 border">{order.customOrderId}</td>
-                <td className="p-2 border">
-                  {order.user
-                    ? `${order.user.name} (${order.user.email})`
-                    : "Guest"}
-                </td>
-                <td className="p-2 border">${order.totalAmount}</td>
-                <td className="p-2 border">{order.status}</td>
-                <td className="p-2 border">
-                  <Link
-                    href={`/admin/orders/${order._id}`}
-                    className="text-blue-600 mr-2"
-                  >
-                    View
-                  </Link>
-                  {order.status !== "cancelled" && (
-                    <button
-                      onClick={() => handleCancel(order._id)}
-                      className="text-red-600"
-                    >
-                      Cancel
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-            {orders.length === 0 && (
-              <tr>
-                <td className="p-2 border text-center" colSpan="5">
-                  No orders found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      {summary && <SummaryCards data={summary} />}
+
+      <OrdersFilter filters={filters} setFilters={setFilters} />
+
+      {loading ? (
+        <div className="flex justify-center items-center min-h-[300px]">
+          <Loader />
+        </div>
+      ) : (
+        <>
+          <OrdersTable orders={orders} onCancel={handleCancel} />
+          <Pagination
+            pagination={pagination}
+            onPageChange={(page) => fetchOrders(page)}
+          />
+        </>
+      )}
     </div>
   );
 }

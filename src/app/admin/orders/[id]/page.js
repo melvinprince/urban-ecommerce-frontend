@@ -4,24 +4,31 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import adminApiService from "@/lib/adminApiService";
 import usePopupStore from "@/store/popupStore";
+import { formatDate } from "@/lib/formatDate";
+import Loader from "@/components/common/Loader";
+import InvoiceDownloadButton from "@/components/invoice/InvoiceDownloadButton";
 
 export default function AdminOrderDetailsPage() {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
   const [status, setStatus] = useState("");
   const [isPaid, setIsPaid] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { showError, showSuccess } = usePopupStore();
   const router = useRouter();
 
   useEffect(() => {
     const fetchOrder = async () => {
       try {
+        setLoading(true);
         const res = await adminApiService.orders.getById(id);
         setOrder(res.data);
         setStatus(res.data.status);
         setIsPaid(res.data.isPaid);
       } catch (err) {
         showError(err.message);
+      } finally {
+        setLoading(false);
       }
     };
     fetchOrder();
@@ -47,11 +54,26 @@ export default function AdminOrderDetailsPage() {
     }
   };
 
-  if (!order) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader />
+      </div>
+    );
+  }
+
+  if (!order) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-gray-600">Order not found.</p>
+      </div>
+    );
+  }
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Order Details</h1>
+
       <p>
         <strong>Order ID:</strong> {order.customOrderId}
       </p>
@@ -64,6 +86,22 @@ export default function AdminOrderDetailsPage() {
       </p>
       <p>
         <strong>Paid:</strong> {order.isPaid ? "Yes" : "No"}
+      </p>
+      <p>
+        <strong>Payment Method:</strong> {order.paymentMethod}
+      </p>
+      <p>
+        <strong>Coupon:</strong>{" "}
+        {order.coupon?.code
+          ? `${order.coupon.code} (${order.coupon.discount} off)`
+          : "None"}
+      </p>
+      <p>
+        <strong>Placed At:</strong> {formatDate(order.createdAt)}
+      </p>
+      <p>
+        <strong>Paid At:</strong>{" "}
+        {order.paidAt ? formatDate(order.paidAt) : "N/A"}
       </p>
       <p>
         <strong>Total:</strong> ${order.totalAmount}
@@ -114,6 +152,9 @@ export default function AdminOrderDetailsPage() {
           >
             Mark as {isPaid ? "Unpaid" : "Paid"}
           </button>
+        </div>
+        <div>
+          <InvoiceDownloadButton order={order} />
         </div>
       </div>
     </div>
