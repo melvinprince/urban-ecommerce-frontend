@@ -4,22 +4,27 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import adminApiService from "@/lib/adminApiService";
 import usePopupStore from "@/store/popupStore";
+import Loader from "@/components/common/Loader";
 
 export default function AdminTicketDetailsPage() {
   const { id } = useParams();
   const [ticket, setTicket] = useState(null);
   const [replyMessage, setReplyMessage] = useState("");
   const [replyFiles, setReplyFiles] = useState([]);
+  const [loading, setLoading] = useState(false);
   const { showError, showSuccess } = usePopupStore();
   const router = useRouter();
 
   useEffect(() => {
     const fetchTicket = async () => {
       try {
+        setLoading(true);
         const res = await adminApiService.tickets.getById(id);
         setTicket(res.data);
       } catch (err) {
         showError(err.message);
+      } finally {
+        setLoading(false);
       }
     };
     fetchTicket();
@@ -29,10 +34,11 @@ export default function AdminTicketDetailsPage() {
     e.preventDefault();
     if (!replyMessage.trim()) return showError("Message is required");
     try {
+      setLoading(true);
       const formData = new FormData();
       formData.append("message", replyMessage);
       for (const file of replyFiles) {
-        formData.append("attachments", file);
+        formData.append("files", file); // ✅ Corrected key
       }
       await adminApiService.tickets.reply(id, formData);
       showSuccess("Reply sent");
@@ -41,11 +47,18 @@ export default function AdminTicketDetailsPage() {
       router.refresh();
     } catch (err) {
       showError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (!ticket) return <div>Loading...</div>;
-
+  if (loading || !ticket) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader />
+      </div>
+    );
+  }
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Ticket: {ticket.subject}</h1>

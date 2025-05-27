@@ -4,24 +4,36 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import adminApiService from "@/lib/adminApiService";
 import usePopupStore from "@/store/popupStore";
+import Loader from "@/components/common/Loader";
 
 export default function AdminTicketsPage() {
   const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(false);
   const { showError } = usePopupStore();
 
   useEffect(() => {
     const fetchTickets = async () => {
       try {
+        setLoading(true);
         const res = await adminApiService.tickets.getAll();
         setTickets(res.data);
       } catch (err) {
         showError(err.message);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchTickets();
   }, [showError]);
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader />
+      </div>
+    );
+  }
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Support Tickets</h1>
