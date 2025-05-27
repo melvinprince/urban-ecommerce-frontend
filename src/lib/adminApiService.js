@@ -65,7 +65,6 @@ const adminApiService = {
 
   orders: {
     getAll: (params = {}) => adminApi.get("/api/admin/orders", { params }),
-
     getById: (id) => adminApi.get(`/api/admin/orders/${id}`),
     update: (id, data) => adminApi.patch(`/api/admin/orders/${id}`, data),
     updatePayment: (id, data) =>

@@ -28,7 +28,7 @@ export default function AdminDashboard() {
           ticketsRes,
           usersRes,
         ] = await Promise.all([
-          adminApiService.orders.getAll(),
+          adminApiService.orders.getSummary(),
           adminApiService.products.getAll(),
           adminApiService.categories.getAll(),
           adminApiService.coupons.getAll(),
@@ -36,8 +36,17 @@ export default function AdminDashboard() {
           adminApiService.users.getAll(),
         ]);
 
-        setStats({
+        console.log("Admin Dashboard Stats:", {
           orders: ordersRes.data.length,
+          products: productsRes.data.length,
+          categories: categoriesRes.data.length,
+          coupons: couponsRes.data.length,
+          tickets: ticketsRes.data.length,
+          users: usersRes.data.length,
+        });
+
+        setStats({
+          orders: ordersRes.data.totalOrders,
           products: productsRes.data.length,
           categories: categoriesRes.data.length,
           coupons: couponsRes.data.length,
