@@ -1,5 +1,6 @@
 import Banner from "@/components/homepage/banner/Banner";
 import ShopByCategory from "@/components/homepage/categoryCard/ShopByCategory";
+import MensShowcase from "@/components/homepage/MensShowcase";
 import Showcase from "@/components/homepage/Showcase";
 import HomeProductSection from "@/components/products/HomeProductSection";
 import RecentlyViewed from "@/components/products/RecentlyViewed";
@@ -10,7 +11,8 @@ export default function page() {
       <Banner />
       {/* <ShopByCategory /> */}
       <Showcase />
-      <HomeProductSection
+      <MensShowcase />
+      {/* <HomeProductSection
         title="Best Sellers"
         query={{ sort: "rating.count:desc", limit: 8 }}
       />
@@ -23,7 +25,7 @@ export default function page() {
         title="Latest Arrivals"
         query={{ sort: "createdAt:desc", limit: 8 }}
       />
-      <RecentlyViewed />
+      <RecentlyViewed /> */}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import SvgIcon from "@/components/common/SvgIcon";
+import Button from "@/components/common/Button";
 
 export default function CategoryCard({
   category,
@@ -29,22 +30,7 @@ export default function CategoryCard({
           className="absolute inset-0 flex flex-col justify-center items-center bg-sgr/30 text-white p-4 backdrop-blur-sm text-center"
         >
           {/* <p className="text-2xl mb-3 line-clamp-2">{category.text}</p> */}
-          <button className="bg-white text-black text-3xl font-semibold py-[1rem] px-[2rem] rounded-full flex items-center gap-1 group-hover:scale-105 transition-transform duration-300 hover:cursor-pointer">
-            {category.button}{" "}
-            <motion.span
-              whileHover={{
-                rotate: [0, 10, -10, 10, -10, 0],
-                transition: { duration: 0.6 },
-              }}
-              className="bg-background rounded-full p-5 ml-5 flex items-center justify-center"
-            >
-              <SvgIcon
-                src="/svg/doubleArrow-right.svg"
-                width={15}
-                height={15}
-              />
-            </motion.span>
-          </button>
+          <Button text={category.button} />
         </motion.div>
       )}
 
