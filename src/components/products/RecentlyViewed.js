@@ -5,6 +5,7 @@ import useRecentlyViewedStore from "@/store/recentlyViewedStore";
 import apiService from "@/lib/apiService";
 import ProductGrid from "@/components/products/ProductGrid";
 import Loader from "@/components/common/Loader";
+import ScrollingText from "@/components/common/ScrollingText";
 
 export default function RecentlyViewed() {
   const { items: productIds } = useRecentlyViewedStore();
@@ -35,8 +36,13 @@ export default function RecentlyViewed() {
   if (!products.length) return null;
 
   return (
-    <section className="my-10 px-4">
-      <h2 className="text-xl font-semibold mb-4">Recently Viewed</h2>
+    <section className="my-[1.5rem] mx-[5rem]">
+      <ScrollingText
+        text="Recently Viewed"
+        baseVelocity={100}
+        size={20}
+        direction="leftToRight"
+      />
       <ProductGrid products={products} />
     </section>
   );

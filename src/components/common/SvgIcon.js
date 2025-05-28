@@ -1,5 +1,3 @@
-// components/common/SvgIcon.jsx
-
 "use client";
 
 import Image from "next/image";

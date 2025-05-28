@@ -86,7 +86,7 @@ body {
   margin: 0;
   padding: 0;
   color: var(--text-primary);
-  background-color: var(--background);
+  background-color: white;
   font-family: var(--font-segoe);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -100,4 +100,14 @@ body {
 }
 .header-auth-wrapper:hover .header-auth-bg {
   transform: translateX(0%) !important;
+}
+
+/*Scrolling Text*/
+.scrolling-text {
+  cursor: grab;
+  user-select: none;
+}
+
+.scrolling-text:active {
+  cursor: grabbing;
 }

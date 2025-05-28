@@ -89,25 +89,6 @@ export default function Carousel({ children, interval = 10000 }) {
         >
           <SvgIcon src="/svg/angleRight.svg" width={15} height={15} />
         </motion.button>
-
-        {/* Dots */}
-        <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 z-20 flex gap-3">
-          {children.map((_, index) => (
-            <motion.button
-              key={index}
-              onClick={() => goToSlide(index)}
-              whileHover={{
-                rotate: [0, -10, 10, -10, 10, 0],
-                transition: { duration: 0.6 },
-              }}
-              className={`w-4 h-4 rounded-full shadow-md ${
-                index === currentIndex
-                  ? "bg-ogr shadow-lg"
-                  : "bg-gray-300 shadow"
-              } transition`}
-            />
-          ))}
-        </div>
       </div>
     </CarouselContext.Provider>
   );

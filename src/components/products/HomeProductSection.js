@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import apiService from "@/lib/apiService";
 import ProductGrid from "@/components/products/ProductGrid";
 import Loader from "@/components/common/Loader";
+import ScrollingText from "../common/ScrollingText";
 
 export default function HomeProductSection({ title, query = {} }) {
   const [products, setProducts] = useState([]);
@@ -15,7 +16,6 @@ export default function HomeProductSection({ title, query = {} }) {
     (async () => {
       try {
         const res = await apiService.products.getAll({ ...query });
-        console.log("Fetched products for:", res);
 
         if (mounted) {
           setProducts(res.data.products || []);
@@ -33,8 +33,15 @@ export default function HomeProductSection({ title, query = {} }) {
   }, [query, title]);
 
   return (
-    <section className="my-10">
-      {title && <h2 className="text-2xl font-semibold mb-6">{title}</h2>}
+    <section className="my-[1.5rem] mx-[5rem]">
+      {title && (
+        <ScrollingText
+          text={title}
+          baseVelocity={100}
+          size={20}
+          direction="leftToRight"
+        />
+      )}
       {loading ? (
         <Loader />
       ) : products?.length ? (

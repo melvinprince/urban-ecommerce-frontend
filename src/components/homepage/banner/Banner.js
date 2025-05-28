@@ -39,7 +39,7 @@ const data = [
 
 export default function Banner() {
   return (
-    <div className="h-[80vh] m-[5rem] px-[2rem] border border-ogr rounded-[25px] overflow-hidden shadow-lg">
+    <div className="h-[80vh] mx-[5rem] my-[4rem] rounded-[25px] overflow-hidden">
       <Carousel>
         {data.map((slide, index) => (
           <Carousel.Slide

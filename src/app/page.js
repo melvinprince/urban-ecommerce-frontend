@@ -6,7 +6,6 @@ export default function page() {
   return (
     <div className="">
       <Banner />
-      <RecentlyViewed />
       <HomeProductSection
         title="Featured Products"
         query={{ isFeatured: true, limit: 8 }}
@@ -23,10 +22,7 @@ export default function page() {
         title="Latest Arrivals"
         query={{ sort: "createdAt:desc", limit: 8 }}
       />
-      <HomeProductSection
-        title="Top Picks of the Month"
-        query={{ tags: "top-pick", limit: 8 }}
-      />
+      <RecentlyViewed />
     </div>
   );
 }
