@@ -1,5 +1,6 @@
 import Banner from "@/components/homepage/banner/Banner";
 import ShopByCategory from "@/components/homepage/categoryCard/ShopByCategory";
+import KidsShowcase from "@/components/homepage/KidsShowcase";
 import MensShowcase from "@/components/homepage/MensShowcase";
 import Showcase from "@/components/homepage/Showcase";
 import HomeProductSection from "@/components/products/HomeProductSection";
@@ -12,6 +13,7 @@ export default function page() {
       {/* <ShopByCategory /> */}
       <Showcase />
       <MensShowcase />
+      <KidsShowcase />
       {/* <HomeProductSection
         title="Best Sellers"
         query={{ sort: "rating.count:desc", limit: 8 }}

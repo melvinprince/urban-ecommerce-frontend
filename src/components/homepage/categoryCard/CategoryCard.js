@@ -2,41 +2,112 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import Button from "@/components/common/Button";
+
+/* -----------------------------------------------------------
+ * New animation variants
+ * --------------------------------------------------------- */
+const cardVariants = {
+  rest: {
+    y: 0,
+    rotateX: 0,
+    rotateY: 0,
+    boxShadow: "0 8px 18px rgba(0,0,0,0.15)",
+  },
+  hover: {
+    y: -12,
+    // subtle parallax tilt
+    rotateX: 5,
+    rotateY: -5,
+    boxShadow: "0 18px 36px rgba(0,0,0,0.25)",
+    transition: { type: "spring", stiffness: 220, damping: 18 },
+  },
+};
+
+const bgVariants = {
+  rest: { scale: 1, rotate: 0 },
+  hover: {
+    scale: 1.15,
+    rotate: -2,
+    transition: { duration: 0.6, ease: "easeOut" },
+  },
+};
+
+const overlayVariants = {
+  rest: { clipPath: "inset(100% 0 0 0)", opacity: 0 },
+  hover: {
+    clipPath: "inset(0% 0 0 0)",
+    opacity: 1,
+    transition: { duration: 0.6, ease: "easeOut" },
+  },
+};
+
+const contentVariants = {
+  rest: { y: 25, opacity: 0 },
+  hover: {
+    y: 0,
+    opacity: 1,
+    transition: { delay: 0.15, duration: 0.5, ease: "easeOut" },
+  },
+};
+
+const titleVariants = {
+  rest: { y: 0, backgroundColor: "rgba(255,255,255,0.9)" },
+  hover: {
+    y: -8,
+    backgroundColor: "rgba(255,255,255,1)",
+    transition: { type: "spring", stiffness: 200, damping: 20 },
+  },
+};
 
 export default function CategoryCard({ category }) {
   return (
-    <Link
-      href={category.link}
-      className="group relative block w-[50rem] h-[50rem] overflow-hidden rounded-xl"
+    <motion.div
+      variants={cardVariants}
+      initial="rest"
+      animate="rest"
+      whileHover="hover"
+      className="relative w-auto h-[70rem] rounded-xl overflow-hidden cursor-pointer"
+      style={{ perspective: 1200 }} /* enables 3-D tilt */
     >
-      {/* Background Image */}
-      <motion.div
-        initial={{ scale: 1 }}
-        whileHover={{ scale: 1.1 }}
-        transition={{ duration: 0.5, ease: "easeInOut" }}
-        className="absolute inset-0 bg-center bg-cover"
-        style={{ backgroundImage: `url(${category.image})` }}
-      />
+      <Link href={category.link} className="block w-full h-full">
+        {/* ----------- Background image ----------- */}
+        <motion.div
+          variants={bgVariants}
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${category.image})` }}
+        />
 
-      {/* Overlay */}
-      <motion.div
-        initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
-        whileHover={{ opacity: 1, backdropFilter: "blur(8px)" }}
-        transition={{ duration: 0.5, ease: "easeInOut" }}
-        className="absolute inset-0 bg-black/50 flex flex-col justify-center items-center text-center text-white p-4"
-      >
-        <h3 className="text-xl font-semibold mb-2">{category.title}</h3>
-        <p className="text-sm mb-4">{category.text}</p>
-        <button className="bg-white text-black text-sm font-bold py-2 px-4 rounded-full flex items-center gap-2 group-hover:scale-105 transition-transform">
-          {category.button} <ArrowRight size={16} />
-        </button>
-      </motion.div>
+        {/* ----------- Gradient wipe overlay ----------- */}
+        <motion.div
+          variants={overlayVariants}
+          className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent"
+        />
 
-      {/* Category Name on Top */}
-      <div className="absolute top-4 left-4 z-10 text-white text-lg font-bold bg-black/60 px-3 py-1 rounded">
-        {category.title}
-      </div>
-    </Link>
+        {/* ----------- Centered text + button ----------- */}
+        <motion.div
+          variants={contentVariants}
+          className="absolute inset-0 flex flex-col items-center justify-center text-white px-6 text-center pointer-events-none"
+        >
+          <p className="text-3xl md:text-4xl font-semibold mb-4 drop-shadow-lg">
+            {category.text}
+          </p>
+          {category.button && <Button text={category.button} />}
+        </motion.div>
+
+        {/* ----------- Sliding title bar ----------- */}
+        <motion.div
+          variants={titleVariants}
+          className="absolute bottom-0 left-0 w-full z-10 text-black text-5xl font-bold px-3 py-1 flex items-center justify-center"
+          style={{
+            backdropFilter: "blur(4px)",
+            borderTopLeftRadius: "0.75rem",
+            borderTopRightRadius: "0.75rem",
+          }}
+        >
+          <h3>{category.title}</h3>
+        </motion.div>
+      </Link>
+    </motion.div>
   );
 }

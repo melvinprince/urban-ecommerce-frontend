@@ -58,7 +58,7 @@ export default function MensShowcase() {
   };
 
   return (
-    <div className="my-[5rem] mx-[5rem] flex flex-col gap-[3rem] h-[80vh]">
+    <div className="my-[10rem] mx-[5rem] flex flex-col gap-[3rem] h-[80vh]">
       <DualImageShowcase
         carouselData={carouselItems}
         sideData={sideBanner}

@@ -24,8 +24,8 @@ export default function Showcase() {
       button: "See Tees",
     },
     {
-      title: "Graphic Tees women",
-      image: "/images/categories/graphic-tees.jpeg",
+      title: "Bucket Hats",
+      image: "/images/categories/bucket-hats.jpeg",
       link: "/categories/women/graphic-teess",
       text: "Make a statement with bold prints and edgy designs for your everyday vibes.",
       button: "See Tees s",
@@ -35,25 +35,25 @@ export default function Showcase() {
   const products = [
     {
       id: "1",
-      title: "Black Cargo Pants - 90 QAR",
+      title: "Lorem Ipsum - 90 QAR",
       image: "/images/showcase/womens-showcase-1.png",
       link: "/product/black-cargo-pants",
     },
     {
       id: "2",
-      title: "Oversized Hoodie - 140 QAR",
+      title: "Lorem Ipsum - 140 QAR",
       image: "/images/showcase/womens-showcase-2.jpeg",
       link: "/product/oversized-hoodie",
     },
     {
       id: "3",
-      title: "Retro Sneakers - 50 QAR",
+      title: "LOREM IPSUM - 50 QAR",
       image: "/images/showcase/womens-showcase-3.jpeg",
       link: "/product/retro-sneakers",
     },
   ];
   return (
-    <div className="mx-[5rem] my-[5rem]">
+    <div className="mx-[5rem] my-[10rem]">
       <CategoryProductShowcase
         categories={categories}
         products={products}
