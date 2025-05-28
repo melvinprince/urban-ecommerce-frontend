@@ -1,10 +1,11 @@
+import Banner from "@/components/homepage/banner/Banner";
 import HomeProductSection from "@/components/products/HomeProductSection";
 import RecentlyViewed from "@/components/products/RecentlyViewed";
 
 export default function page() {
   return (
-    <div className="text-5xl">
-      Urban Home
+    <div className="">
+      <Banner />
       <RecentlyViewed />
       <HomeProductSection
         title="Featured Products"
