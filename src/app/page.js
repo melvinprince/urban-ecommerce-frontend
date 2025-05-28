@@ -1,4 +1,6 @@
 import Banner from "@/components/homepage/banner/Banner";
+import ShopByCategory from "@/components/homepage/categoryCard/ShopByCategory";
+import Showcase from "@/components/homepage/Showcase";
 import HomeProductSection from "@/components/products/HomeProductSection";
 import RecentlyViewed from "@/components/products/RecentlyViewed";
 
@@ -6,14 +8,13 @@ export default function page() {
   return (
     <div className="">
       <Banner />
-      <HomeProductSection
-        title="Featured Products"
-        query={{ isFeatured: true, limit: 8 }}
-      />
+      {/* <ShopByCategory /> */}
+      <Showcase />
       <HomeProductSection
         title="Best Sellers"
         query={{ sort: "rating.count:desc", limit: 8 }}
       />
+
       <HomeProductSection
         title="Special Discounts"
         query={{ discountOnly: true, limit: 8 }}
