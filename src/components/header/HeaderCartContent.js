@@ -1,0 +1,47 @@
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
+import { Player } from "@lottiefiles/react-lottie-player";
+import Image from "next/image";
+
+export default function HeaderCartContent({ totalItems }) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <Link
+      href="/cart"
+      className="relative pl-[1rem]"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Static icon when not hovered */}
+      {!isHovered && (
+        <div className="flex items-center justify-center">
+          <Image
+            src="/icons/shopping-cart.png"
+            alt="Cart"
+            width={50}
+            height={50}
+          />
+        </div>
+      )}
+
+      {/* Lottie animation on hover */}
+      {isHovered && (
+        <Player
+          autoplay
+          keepLastFrame
+          src="/json/shopping-cart.json"
+          style={{ height: "50px", width: "50px" }}
+        />
+      )}
+
+      {totalItems > 0 && (
+        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center">
+          {totalItems}
+        </span>
+      )}
+    </Link>
+  );
+}

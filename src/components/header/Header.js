@@ -1,18 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import useAuthStore from "@/store/authStore";
 import useCartStore from "@/store/cartStore";
-import { ShoppingCart } from "lucide-react";
-
-const headerLinks = [
-  { id: 1, text: "Home", link: "/" },
-  { id: 2, text: "Categories", link: "/categories" },
-  { id: 3, text: "Contact", link: "/contact" },
-  { id: 4, text: "Help", link: "/help" },
-];
+import HeaderLogo from "./HeaderLogo";
+import HeaderSearch from "./HeaderSearch";
+import HeaderLinks from "./HeaderLinks";
+import HeaderAuth from "./HeaderAuth";
+import HeaderCart from "./HeaderCart";
 
 export default function Header() {
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
@@ -23,90 +19,45 @@ export default function Header() {
 
   const { totalItems, fetchCart } = useCartStore();
   const router = useRouter();
+  const pathname = usePathname();
   const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     initializeAuth();
     fetchCart();
   }, [initializeAuth, fetchCart]);
 
+  useEffect(() => {
+    // When pathname changes (new page loads), stop loading
+    if (loading) {
+      setLoading(false);
+    }
+  }, [pathname]); // runs every time the path changes
+
   if (!hydrated) return null;
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (!query.trim()) return;
+
+    setLoading(true);
     router.push(`/search?q=${encodeURIComponent(query.trim())}`);
   };
 
   return (
-    <header className="flex flex-col sm:flex-row justify-between items-center bg-ogr p-4 gap-4">
-      <div className="text-2xl font-bold text-white">Urban Home</div>
-
-      <form onSubmit={handleSearch} className="w-full sm:max-w-md flex gap-2">
-        <input
-          type="text"
-          placeholder="Search products..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:border-black"
-        />
-        <button
-          type="submit"
-          className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition"
-        >
-          Search
-        </button>
-      </form>
-
-      <nav className="flex flex-wrap items-center gap-4 sm:gap-6">
-        {headerLinks.map(({ id, text, link }) => (
-          <Link
-            key={id}
-            href={link}
-            className="text-lg text-sgr hover:text-white"
-          >
-            {text}
-          </Link>
-        ))}
-
-        {!isLoggedIn ? (
-          <Link
-            href="/user/login-register"
-            className="text-lg text-sgr hover:text-white"
-          >
-            Login/Register
-          </Link>
-        ) : (
-          <>
-            {user?.name && (
-              <Link href="/user/profile" className="text-lg text-sgr">
-                Welcome, {user.name.split(" ")[0]}
-              </Link>
-            )}
-
-            {user?.role === "adm" && (
-              <Link href="/admin" className="text-lg text-sgr hover:text-white">
-                Admin
-              </Link>
-            )}
-
-            <button
-              onClick={logout}
-              className="text-lg text-sgr hover:text-white"
-            >
-              Sign Out
-            </button>
-          </>
-        )}
-
-        <Link href="/cart" className="relative text-sgr hover:text-white">
-          <ShoppingCart size={24} />
-          {totalItems > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center">
-              {totalItems}
-            </span>
-          )}
-        </Link>
+    <header className="grid grid-cols-3 justify-center items-center bg-black px-[5rem] py-[2rem] gap-4">
+      <HeaderLogo />
+      <HeaderSearch
+        query={query}
+        setQuery={setQuery}
+        handleSearch={handleSearch}
+        loading={loading}
+      />
+      <nav className="justify-self-end flex items-center gap-[2rem] text-2xl font-bold text-background">
+        <HeaderLinks />
+        <HeaderAuth isLoggedIn={isLoggedIn} user={user} logout={logout} />
+        <HeaderCart totalItems={totalItems} />
       </nav>
     </header>
   );

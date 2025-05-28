@@ -19,12 +19,6 @@ export default function Slide({
 }) {
   const { currentIndex } = useCarousel();
   const isImageLeft = order === "left";
-  console.log(
-    "Slide rendered with order:",
-    order,
-    "Image on left:",
-    isImageLeft
-  );
 
   const [clip, setClip] = useState("polygon(0 0, 0 0, 0 100%, 0 100%)"); // Start fully hidden
 

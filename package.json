@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@lottiefiles/react-lottie-player": "^3.6.0",
     "@paypal/react-paypal-js": "^8.8.3",
     "axios": "^1.9.0",
     "clsx": "^2.1.1",

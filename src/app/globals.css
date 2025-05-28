@@ -93,3 +93,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeSpeed;
 }
+
+/* Header nav links hoiver animtation */
+.header-link-wrapper:hover .header-link-bg {
+  transform: translateX(0%) !important;
+}
+.header-auth-wrapper:hover .header-auth-bg {
+  transform: translateX(0%) !important;
+}
