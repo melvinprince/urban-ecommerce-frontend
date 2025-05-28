@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import SvgIcon from "@/components/common/SvgIcon";
+import Button from "@/components/common/Button";
 
 export default function Slide({
   image,
@@ -85,23 +85,9 @@ export default function Slide({
             <p className="text-justify text-3xl">{text}</p>
             <Link
               href={link}
-              className="text-3xl bg-sgr rounded-full px-[2rem] py-[1rem] w-fit flex items-center justify-center self-end mt-[2rem] shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out"
+              className="text-3xl bg-ogr rounded-full px-[.5rem] py-[.5rem] w-fit flex items-center justify-center self-end mt-[2rem] shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out hover:px-[1rem]"
             >
-              {buttonText}
-
-              <motion.span
-                whileHover={{
-                  rotate: [0, 10, -10, 10, -10, 0],
-                  transition: { duration: 0.6 },
-                }}
-                className="bg-background rounded-full p-5 ml-5 flex items-center justify-center"
-              >
-                <SvgIcon
-                  src="/svg/doubleArrow-right.svg"
-                  width={15}
-                  height={15}
-                />
-              </motion.span>
+              <Button text={buttonText} />
             </Link>
           </div>
         </div>
