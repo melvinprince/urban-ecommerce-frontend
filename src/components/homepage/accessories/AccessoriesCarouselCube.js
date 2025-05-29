@@ -7,10 +7,10 @@ import Link from "next/link";
 import Button from "@/components/common/Button";
 
 /* ---------- tune ---------- */
-const INTERVAL = 2500; // ms
-const FLIP_DUR = 0.9; // cube rotation seconds
-const PERSPECTIVE = 1200; // px
-const KEN_BURNS = 1.06; // image slow-zoom factor
+const INTERVAL = 2500;
+const FLIP_DUR = 0.9;
+const PERSPECTIVE = 1200;
+const KEN_BURNS = 1.06;
 
 export default function AccessoriesCarouselCube({
   images,
@@ -95,8 +95,6 @@ export default function AccessoriesCarouselCube({
               />
             </motion.div>
 
-            {/* overlay & button */}
-            {/* overlay & button — visible ONLY on hover */}
             {current.button && (
               <div
                 className="absolute inset-0 flex items-center justify-center
