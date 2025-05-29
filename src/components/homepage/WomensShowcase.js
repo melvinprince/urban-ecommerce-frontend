@@ -1,6 +1,6 @@
 import CategoryProductShowcase from "./showcase/CategoryProductsShowcase";
 
-export default function Showcase() {
+export default function WomensShowcase() {
   const categories = [
     {
       title: "Oversized Streetwear",
