@@ -55,12 +55,12 @@ export default function ShoeCarousel({ data = [] }) {
 
   return (
     <div
-      className="flex w-full h-[70vh] mx-auto select-none"
+      className="flex w-full h-[70vh] mx-auto select-none "
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
       {/* ------------ main display ------------ */}
-      <div className="relative w-3/4 aspect-[3/4] overflow-hidden rounded-lg">
+      <div className="relative w-3/4 aspect-[3/4] overflow-hidden rounded-[25px] shadow-2xl">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={index}
@@ -132,10 +132,10 @@ export default function ShoeCarousel({ data = [] }) {
 
 /* ---------- Thumbnail v2 (smaller + zoom-timer) ---------- */
 function Thumb({ item, active, onClick, paused }) {
-  const OUTER_BASE = 0.9; // 80 % size for every thumb
-  const OUTER_ACTIVE = 1; // active grows to 100 %
+  const OUTER_BASE = 1; // 80 % size for every thumb
+  const OUTER_ACTIVE = 0.95; // active grows to 100 %
   const OUTER_HOVER = 1.05; // tiny lift on hover
-  const INNER_START = 1.05; // image starts slightly zoomed
+  const INNER_START = 1.02; // image starts slightly zoomed
   const INNER_END = 0.99; // image drifts out to this
 
   return (
@@ -145,7 +145,7 @@ function Thumb({ item, active, onClick, paused }) {
       animate={{ scale: active ? OUTER_ACTIVE : OUTER_BASE }}
       whileHover={{ scale: active ? OUTER_HOVER : OUTER_BASE + 0.1 }}
       transition={{ type: "spring", stiffness: 260, damping: 20 }}
-      className={`relative w-full aspect-[3/4] cursor-pointer overflow-hidden rounded-lg ${
+      className={`relative w-full aspect-[3/4] cursor-pointer overflow-hidden rounded-[25px] ${
         active ? "shadow-2xl" : "shadow-md"
       }`}
     >
@@ -164,16 +164,21 @@ function Thumb({ item, active, onClick, paused }) {
         }
         className="absolute inset-0"
       >
-        <Image src={item.image} alt={item.text} fill className="object-cover" />
+        <Image
+          src={item.image}
+          alt={item.text}
+          fill
+          className="object-cover object-bottom"
+        />
       </motion.div>
 
       {/* border glow */}
       <motion.div
         animate={{
-          borderColor: active ? "#000" : "rgba(0,0,0,0)",
+          borderColor: active ? "#5a6344" : "rgba(0,0,0,0)",
           transition: { type: "spring", stiffness: 300, damping: 20 },
         }}
-        className="absolute inset-0 border-2 rounded-lg pointer-events-none"
+        className="absolute inset-0 border-2 rounded-[25px] pointer-events-none"
       />
     </motion.div>
   );
