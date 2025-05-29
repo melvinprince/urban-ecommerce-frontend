@@ -35,19 +35,19 @@ export default function WomensShowcase() {
   const products = [
     {
       id: "1",
-      title: "Lorem Ipsum - 90 QAR",
+      title: "Womend Dress Item - 90 QAR",
       image: "/images/showcase/womens-showcase-1.png",
       link: "/product/black-cargo-pants",
     },
     {
       id: "2",
-      title: "Lorem Ipsum - 140 QAR",
+      title: "Womend Dress Item - 140 QAR",
       image: "/images/showcase/womens-showcase-2.jpeg",
       link: "/product/oversized-hoodie",
     },
     {
       id: "3",
-      title: "LOREM IPSUM - 50 QAR",
+      title: "Womend Dress Item - 50 QAR",
       image: "/images/showcase/womens-showcase-3.jpeg",
       link: "/product/retro-sneakers",
     },

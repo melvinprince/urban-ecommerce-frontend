@@ -121,16 +121,25 @@ export default function ProductCarousel({
               </motion.div>
             </Link>
 
-            {/* title strip */}
-            <motion.span
+            <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ duration: 0.6, ease: SLIDE_EASE }}
-              className="absolute bottom-0 left-1/2 -translate-x-1/2 bg-ogr text-white text-4xl font-bold w-full text-center py-4 backdrop-blur-sm"
+              className="absolute bottom-0 w-full
+             bg-gradient-to-t from-black/80 via-black/40 to-transparent
+             backdrop-blur-sm p-6 flex flex-col gap-2"
             >
-              {products[index].title}
-            </motion.span>
+              <span className="text-white text-4xl md:text-5xl font-bold leading-tight">
+                {products[index].title}
+              </span>
+
+              {products[index].subtitle && (
+                <span className="text-white/80 text-xl tracking-wide">
+                  {products[index].subtitle}
+                </span>
+              )}
+            </motion.div>
           </motion.div>
         </AnimatePresence>
       </div>

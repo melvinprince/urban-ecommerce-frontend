@@ -1,3 +1,4 @@
+import ScrollColorText from "@/components/common/ScrollColorText";
 import AccessoriesShowcase from "@/components/homepage/AccessoriesShowcase";
 import Banner from "@/components/homepage/banner/Banner";
 import ShopByCategory from "@/components/homepage/categoryCard/ShopByCategory";
@@ -10,14 +11,20 @@ import RecentlyViewed from "@/components/products/RecentlyViewed";
 
 export default function page() {
   return (
-    <div className="">
+    <div>
       <Banner />
       {/* <ShopByCategory /> */}
+      <ScrollColorText text="Discover Timeless Women's Fashion" size="6rem" />
       <WomensShowcase />
+      <ScrollColorText text="Elevate Your Look with Men's Style" size="6rem" />
       <MensShowcase />
+      <ScrollColorText text="Playful Styles for Growing Kids" size="6rem" />
       <KidsShowcase />
+      <ScrollColorText text="Step Into Style with Every Pair" size="6rem" />
       <ShoeShowcase />
+      <ScrollColorText text="Accessories That Define Your Style" size="6rem" />
       <AccessoriesShowcase />
+
       {/* <HomeProductSection
         title="Best Sellers"
         query={{ sort: "rating.count:desc", limit: 8 }}
