@@ -5,9 +5,9 @@ import CategoryTile from "./CategoryTile";
 
 /* depth-based sizing */
 function sizing(level) {
-  if (level === 0) return { li: "basis-96", label: "text-xl" }; // 24 rem
-  if (level === 1) return { li: "basis-72", label: "text-lg" }; // 18 rem
-  return { li: "basis-56", label: "text-base" }; // 14 rem
+  if (level === 0) return { li: "basis-110", label: "text-3xl" }; // 24 rem
+  if (level === 1) return { li: "basis-85", label: "text-2xl" }; // 18 rem
+  return { li: "basis-70", label: "text-xl" }; // 14 rem
 }
 
 /**

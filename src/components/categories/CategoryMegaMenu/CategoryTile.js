@@ -17,7 +17,8 @@ export default function CategoryTile({
         "group block relative w-full h-full rounded-lg overflow-hidden",
         "ring-1 ring-gray-200 hover:ring-gray-400"
       )}
-      style={{ aspectRatio: "16/9" }}
+      /* 👇 Square tile */
+      style={{ aspectRatio: "1 / 1" }}
     >
       <Image
         src={category.image || "/images/categories/girl-boy.jpeg"}
