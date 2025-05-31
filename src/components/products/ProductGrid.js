@@ -27,13 +27,18 @@ export default function ProductGrid({ products }) {
   }
 
   return (
-    <div className="w-full flex items-center justify-center relative py-6 overflow-hidden">
-      <button
+    <div className="w-full flex items-center justify-center relative overflow-hidden">
+      {/* Prev Arrow */}
+      <motion.button
         onClick={handlePrev}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-black text-white rounded-[10px] hover:scale-110 transition"
+        whileHover={{
+          rotate: [0, -10, 10, -10, 10, 0],
+          transition: { duration: 0.6 },
+        }}
+        className="absolute left-5 top-1/2 -translate-y-1/2 z-20 bg-ogr text-white w-15 h-15 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl text-3xl hover:scale-105 transition-transform duration-500 ease-in-out hover:cursor-pointer"
       >
-        <SvgIcon src="/svg/angleLeft.svg" width={24} height={24} />
-      </button>
+        <SvgIcon src="/svg/angleLeft.svg" width={15} height={15} />
+      </motion.button>
 
       <div className="w-[95%] h-[60vh] overflow-hidden">
         <motion.div
@@ -57,12 +62,17 @@ export default function ProductGrid({ products }) {
         </motion.div>
       </div>
 
-      <button
+      {/* Next Arrow */}
+      <motion.button
         onClick={handleNext}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-black text-white rounded-[10px] hover:scale-110 transition"
+        whileHover={{
+          rotate: [0, -10, 10, -10, 10, 0],
+          transition: { duration: 0.6 },
+        }}
+        className="absolute right-5 top-1/2 -translate-y-1/2 z-20 bg-ogr text-white w-15 h-15 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl text-3xl hover:scale-105 transition-transform duration-500 ease-in-out hover:cursor-pointer"
       >
-        <SvgIcon src="/svg/angleRight.svg" width={24} height={24} />
-      </button>
+        <SvgIcon src="/svg/angleRight.svg" width={15} height={15} />
+      </motion.button>
     </div>
   );
 }
