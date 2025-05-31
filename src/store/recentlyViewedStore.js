@@ -8,17 +8,22 @@ const useRecentlyViewedStore = create(
     (set, get) => ({
       items: [],
 
-      addItem: (productId) => {
+      addItem: (product) => {
         const current = get().items;
-        const filtered = current.filter((id) => id !== productId);
-        const updated = [productId, ...filtered].slice(0, MAX_ITEMS);
+
+        // Remove any existing entry with the same _id
+        const filtered = current.filter((p) => p._id !== product._id);
+
+        // Add the new product to the front
+        const updated = [product, ...filtered].slice(0, MAX_ITEMS);
+
         set({ items: updated });
       },
 
       clearItems: () => set({ items: [] }),
     }),
     {
-      name: "recently-viewed", // localStorage key
+      name: "recently-viewed", // LocalStorage key
     }
   )
 );

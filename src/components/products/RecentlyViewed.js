@@ -21,6 +21,8 @@ export default function RecentlyViewed() {
 
       try {
         const res = await apiService.products.getByIds(productIds);
+        console.log("Fetched recently viewed products:", res);
+
         setProducts(res || []);
       } catch (err) {
         console.error("Failed to fetch recently viewed products", err);

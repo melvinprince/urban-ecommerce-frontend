@@ -21,7 +21,7 @@ export default function ProductDetailContent() {
         const { data } = await apiService.products.getBySlug(slug);
         setProduct(data);
 
-        if (data?._id) addItem(data._id);
+        if (data?._id) addItem(data); // ✅ Pass full product object
       } catch (err) {
         console.error(err);
         setError(err.message || "Failed to load product.");
