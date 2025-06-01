@@ -52,11 +52,22 @@ const apiService = {
   },
 
   cart: {
-    get: () => api.get("/api/cart"),
-    addOrUpdate: (item) => api.post("/api/cart", item),
-    remove: (id) => api.delete(`/api/cart/${id}`),
-    update: (id, item) => api.put(`/api/cart/${id}`, item),
-    clear: () => api.delete("/api/cart/clear"),
+    get: () => {
+      return api.get("/api/cart");
+    },
+    addOrUpdate: (item) => {
+      return api.post("/api/cart", item);
+    },
+    remove: (id) => {
+      return api.delete(`/api/cart/${id}`);
+    },
+    update: (id, item) => {
+      return api.put(`/api/cart/${id}`, item);
+    },
+    clear: () => {
+      console.log("[apiService.cart.clear] Called");
+      return api.delete("/api/cart/clear");
+    },
   },
 
   wishlist: {

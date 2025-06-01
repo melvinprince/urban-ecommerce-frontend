@@ -1,18 +1,17 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import apiService from "@/lib/apiService"; // 🆕 Use centralized API service
-import EventBus from "@/lib/eventBus"; // Use from lib folder
+import apiService from "@/lib/apiService";
+import EventBus from "@/lib/eventBus";
 
 const useCartStore = create(
   persist(
     (set, get) => {
       const isLoggedIn = () => {
-        // Dynamically import to avoid cyclic deps
         const useAuthStore = require("./authStore").default;
         return useAuthStore.getState().isLoggedIn;
       };
 
-      // Subscribe to logout event
+      // Clear cart on logout
       EventBus.on("user:logout", () => {
         set({
           items: [],
@@ -31,62 +30,66 @@ const useCartStore = create(
         error: null,
 
         fetchCart: async () => {
-          if (isLoggedIn()) {
-            try {
-              const { data } = await apiService.cart.getCart(); // 🆕
-              set({
-                items: data.items,
-                totalItems: data.totalItems,
-                subtotal: data.subtotal,
-                isLoaded: true,
-                error: null,
-              });
-              return;
-            } catch (err) {
-              console.error(
-                "[CartStore] Server fetch failed, falling back to guest cart"
-              );
-            }
+          try {
+            const response = await apiService.cart.get();
+            const { items, totalItems, subtotal } = response.data;
+            set({
+              items,
+              totalItems,
+              subtotal,
+              isLoaded: true,
+              error: null,
+            });
+          } catch {
+            const guest = get().items || [];
+            const total = guest.reduce((s, i) => s + i.quantity, 0);
+            const sum = guest.reduce(
+              (s, i) => s + i.quantity * (i.product?.price || 0),
+              0
+            );
+            set({
+              items: guest,
+              totalItems: total,
+              subtotal: sum,
+              isLoaded: true,
+              error: null,
+            });
           }
-          const guest = get().items || [];
-          const total = guest.reduce((s, i) => s + i.quantity, 0);
-          const sum = guest.reduce(
-            (s, i) => s + i.quantity * (i.product.price || 0),
-            0
-          );
-          set({
-            items: guest,
-            totalItems: total,
-            subtotal: sum,
-            isLoaded: true,
-            error: null,
-          });
         },
 
         addItem: async (item) => {
           const { productId, quantity = 1, size, color } = item;
+
           if (isLoggedIn()) {
-            const { data } = await apiService.cart.addOrUpdate({
-              productId,
-              quantity,
-              size,
-              color,
-            });
-            set({
-              items: data.items,
-              totalItems: data.totalItems,
-              subtotal: data.subtotal,
-              error: null,
-            });
+            try {
+              const response = await apiService.cart.addOrUpdate({
+                productId,
+                quantity,
+                size,
+                color,
+              });
+              const { items, totalItems, subtotal } = response.data;
+              set({
+                items,
+                totalItems,
+                subtotal,
+                isLoaded: true,
+                error: null,
+              });
+            } catch (err) {
+              set({ error: err.message });
+              throw err;
+            }
           } else {
             const store = get();
             let updated = [...store.items];
             const idx = updated.findIndex(
               (i) =>
-                i.product._id === productId &&
+                i.product?._id === productId &&
                 i.size === size &&
                 i.color === color
             );
+
             if (idx > -1) {
               updated[idx].quantity += quantity;
             } else {
@@ -98,9 +101,10 @@ const useCartStore = create(
                 color,
               });
             }
+
             const total = updated.reduce((s, i) => s + i.quantity, 0);
             const sum = updated.reduce(
-              (s, i) => s + i.quantity * (i.product.price || 0),
+              (s, i) => s + i.quantity * (i.product?.price || 0),
               0
             );
             set({ items: updated, totalItems: total, subtotal: sum });
@@ -109,19 +113,24 @@ const useCartStore = create(
 
         removeItem: async (itemId) => {
           if (isLoggedIn()) {
-            const { data } = await apiService.cart.removeItem(itemId);
-            set({
-              items: data.items,
-              totalItems: data.totalItems,
-              subtotal: data.subtotal,
-              error: null,
-            });
+            try {
+              const response = await apiService.cart.remove(itemId);
+              const { items, totalItems, subtotal } = response.data;
+              set({
+                items,
+                totalItems,
+                subtotal,
+                error: null,
+              });
+            } catch (err) {
+              set({ error: err.message });
+            }
           } else {
             const store = get();
             const updated = store.items.filter((i) => i._id !== itemId);
             const total = updated.reduce((s, i) => s + i.quantity, 0);
             const sum = updated.reduce(
-              (s, i) => s + i.quantity * (i.product.price || 0),
+              (s, i) => s + i.quantity * (i.product?.price || 0),
               0
             );
             set({ items: updated, totalItems: total, subtotal: sum });
@@ -130,13 +139,18 @@ const useCartStore = create(
 
         updateItem: async (itemId, updates) => {
           if (isLoggedIn()) {
-            const { data } = await apiService.cart.updateItem(itemId, updates);
-            set({
-              items: data.items,
-              totalItems: data.totalItems,
-              subtotal: data.subtotal,
-              error: null,
-            });
+            try {
+              const response = await apiService.cart.update(itemId, updates);
+              const { items, totalItems, subtotal } = response.data;
+              set({
+                items,
+                totalItems,
+                subtotal,
+                error: null,
+              });
+            } catch (err) {
+              set({ error: err.message });
+            }
           } else {
             const store = get();
             const updated = store.items.map((i) =>
@@ -144,7 +158,7 @@ const useCartStore = create(
             );
             const total = updated.reduce((s, i) => s + i.quantity, 0);
             const sum = updated.reduce(
-              (s, i) => s + i.quantity * (i.product.price || 0),
+              (s, i) => s + i.quantity * (i.product?.price || 0),
               0
             );
             set({ items: updated, totalItems: total, subtotal: sum });
@@ -154,19 +168,17 @@ const useCartStore = create(
         clearCart: async () => {
           if (isLoggedIn()) {
             try {
-              const { data } = await apiService.cart.clear();
+              const response = await apiService.cart.clear();
+              const { items, totalItems, subtotal } = response.data;
               set({
-                items: data.items,
-                totalItems: data.totalItems,
-                subtotal: data.subtotal,
+                items,
+                totalItems,
+                subtotal,
                 isLoaded: true,
                 error: null,
               });
-            } catch (err) {
-              console.error(
-                "[CartStore] Server cart clear failed:",
-                err.message
-              );
+            } catch {
+              // ignore
             }
           } else {
             set({

@@ -4,9 +4,13 @@ import Link from "next/link";
 import { useState } from "react";
 import { Player } from "@lottiefiles/react-lottie-player";
 import Image from "next/image";
+import useCartStore from "@/store/cartStore";
 
-export default function HeaderCartContent({ totalItems }) {
+export default function HeaderCartContent() {
   const [isHovered, setIsHovered] = useState(false);
+
+  // Subscribe directly to totalItems in the cart store
+  const totalItems = useCartStore((s) => s.totalItems);
 
   return (
     <Link

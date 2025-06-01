@@ -11,11 +11,10 @@ import useWishlistStore from "@/store/wishlistStore";
 import usePopupStore from "@/store/popupStore";
 import apiService from "@/lib/apiService";
 
+// Dynamic import of the AddToCartButton (UI only)
 const AddToCartButton = dynamic(
   () => import("@/components/common/AddToCartButton"),
-  {
-    ssr: false,
-  }
+  { ssr: false }
 );
 
 const SaleBadge = dynamic(() => import("./SaleBadge"), { ssr: false });
@@ -43,7 +42,7 @@ export default function ProductCard({ product }) {
 
   /* ---------- store hooks ---------- */
   const addItem = useCartStore((s) => s.addItem);
-  const wishlistItems = useWishlistStore((s) => s.items);
+  const wishlistItems = useWishlistStore((s) => s.items) || [];
   const addToWishlist = useWishlistStore((s) => s.addItem);
   const removeWishlist = useWishlistStore((s) => s.removeItem);
   const { showSuccess, showError } = usePopupStore.getState();
@@ -56,9 +55,17 @@ export default function ProductCard({ product }) {
 
   /* ---------- sync wishlist flag ---------- */
   useEffect(() => {
-    const inWishlist = wishlistItems.some((w) => w.product._id === product._id);
+    // Only run if both `wishlistItems` and `product._id` exist
+    if (!product?._id || !Array.isArray(wishlistItems)) {
+      setIsWishlisted(false);
+      return;
+    }
+
+    const inWishlist = wishlistItems.some(
+      (w) => w.product?._id === product._id
+    );
     setIsWishlisted(inWishlist);
-  }, [wishlistItems, product._id]);
+  }, [wishlistItems, product?._id]);
 
   /* ---------- cart handler ---------- */
   async function handleAddToCart(e) {
@@ -67,7 +74,7 @@ export default function ProductCard({ product }) {
     setAdding(true);
 
     try {
-      // if product lacks sizes, colors, or stock, fetch full details:
+      // If product lacks sizes, colors, or stock, fetch full details:
       let full = product;
       if (
         !product.sizes?.length ||
@@ -86,9 +93,9 @@ export default function ProductCard({ product }) {
         color: full.colors?.[0] ?? null,
       });
 
-      // if it was already in wishlist, remove it:
-      if (isWishlisted) {
-        const entry = wishlistItems.find((w) => w.product._id === product._id);
+      // If it was already in wishlist, remove it:
+      if (isWishlisted && Array.isArray(wishlistItems)) {
+        const entry = wishlistItems.find((w) => w.product?._id === product._id);
         if (entry) {
           await removeWishlist(entry._id);
         }
@@ -112,15 +119,18 @@ export default function ProductCard({ product }) {
     setWishLoading(true);
 
     try {
-      if (isWishlisted) {
-        const entry = wishlistItems.find((w) => w.product._id === product._id);
+      if (isWishlisted && Array.isArray(wishlistItems)) {
+        const entry = wishlistItems.find((w) => w.product?._id === product._id);
         if (entry) {
           await removeWishlist(entry._id);
         }
         showSuccess("Removed from wishlist.");
       } else {
-        await addToWishlist(product);
-        showSuccess("Added to wishlist!");
+        // Only call addToWishlist if product exists
+        if (product?._id) {
+          await addToWishlist(product);
+          showSuccess("Added to wishlist!");
+        }
       }
     } catch (err) {
       console.error(err);
@@ -145,7 +155,7 @@ export default function ProductCard({ product }) {
       className="
         relative w-full h-full bg-white rounded-[25px] overflow-hidden
         shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2)] backdrop-blur
-        transition-transform hover:scale-[1.02] border border-gray-200 pb-[1rem] 
+        transition-transform hover:scale-[1.02] border border-gray-200 pb-[1rem]
       "
     >
       {/* ♥ Wishlist Button */}
@@ -211,9 +221,9 @@ export default function ProductCard({ product }) {
         {primaryCategory && (
           <span
             className="
-            self-start text-lg font-semibold tracking-wider uppercase
-            rounded-full px-3 py-1 border border-ogr text-ogr
-          "
+              self-start text-lg font-semibold tracking-wider uppercase
+              rounded-full px-3 py-1 border border-ogr text-ogr
+            "
           >
             {primaryCategory}
           </span>
