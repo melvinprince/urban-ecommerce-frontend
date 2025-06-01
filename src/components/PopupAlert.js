@@ -1,5 +1,6 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
+import SvgIcon from "./common/SvgIcon";
 
 export default function PopupAlert({ type, message, onClose }) {
   if (!message) return null;
@@ -21,12 +22,12 @@ export default function PopupAlert({ type, message, onClose }) {
           typeStyles[type] || "bg-gray-500"
         }`}
       >
-        <span className="text-sm font-medium">{message}</span>
+        <span className="text-xl">{message}</span>
         <button
           onClick={onClose}
-          className="ml-4 text-white hover:opacity-80 text-lg leading-none"
+          className=" hover:opacity-80 leading-none transition-opacity duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white hover:cursor-pointer"
         >
-          ×
+          <SvgIcon src={"/svg/close.svg"} width={24} height={24} />
         </button>
       </motion.div>
     </AnimatePresence>
