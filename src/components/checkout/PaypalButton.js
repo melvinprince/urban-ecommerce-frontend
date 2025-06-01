@@ -8,7 +8,7 @@ export default function PayPalButton({ amount, onSuccess, onError }) {
   const usdAmount = convertToUSD(amount); // Convert QAR to USD
 
   return (
-    <div className="mt-4">
+    <div className="mt-4 w-1/2">
       <PayPalButtons
         style={{
           layout: "vertical",

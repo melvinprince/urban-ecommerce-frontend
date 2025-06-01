@@ -30,7 +30,7 @@ export default function ProductInfo({ product }) {
   }, [product.sizes, product.colors]);
 
   useEffect(() => {
-    setIsWishlisted(wishlistItems.some((i) => i.product._id === product._id));
+    setIsWishlisted(wishlistItems.some((i) => i.product?._id === product._id));
   }, [wishlistItems, product._id]);
 
   const handleAddToCart = async () => {

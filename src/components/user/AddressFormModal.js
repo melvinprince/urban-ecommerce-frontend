@@ -1,8 +1,26 @@
+// components/user/AddressFormModal.jsx
 "use client";
 
-import { useState, useEffect } from "react";
-import apiService from "@/lib/apiService"; // Updated import
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import apiService from "@/lib/apiService";
 import usePopupStore from "@/store/popupStore";
+import SvgIcon from "../common/SvgIcon";
+
+/* ------------------- field order ------------------- */
+const FIELDS = [
+  "label",
+  "fullName",
+  "email",
+  "phone",
+  "street",
+  "city",
+  "postalCode",
+  "country",
+];
+
+/* ------------- tiny helper for placeholders -------- */
+const nice = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default function AddressFormModal({
   initialData = null,
@@ -24,103 +42,126 @@ export default function AddressFormModal({
   });
   const [submitting, setSubmitting] = useState(false);
 
+  /* preload edit data */
   useEffect(() => {
-    if (initialData) {
-      setForm({ ...initialData });
-    }
+    if (initialData) setForm({ ...initialData });
   }, [initialData]);
 
+  /* ---------- submit ---------- */
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (submitting) {
-      console.warn("🚫 [AddressFormModal] already submitting");
-      return;
-    }
-
+    if (submitting) return;
     setSubmitting(true);
-
-    const payload = { ...form };
 
     try {
       if (initialData) {
-        await onSuccess(payload);
+        await onSuccess(form); // update path
         showSuccess("Address updated successfully");
       } else {
-        const res = await apiService.addresses.add(payload); // Updated API call
-        const newAddress = res.data.at(-1);
+        const { data } = await apiService.addresses.add(form);
+        const newAddr = data.at(-1);
         showSuccess("Address added successfully");
-        onSuccess(newAddress);
+        onSuccess(newAddr); // add path
       }
     } catch (err) {
-      showError(err.message || "Something went wrong");
+      showError(err?.message || "Something went wrong");
     } finally {
       setSubmitting(false);
     }
   };
 
+  /* ---------- UI ---------- */
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded max-w-md w-full shadow-lg">
-        <h2 className="text-xl font-semibold mb-4">
-          {initialData ? "Edit Address" : "Add New Address"}
-        </h2>
+    <AnimatePresence>
+      {/* ------ overlay ------ */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25 }}
+        className="fixed inset-0 z-50 flex items-center justify-center
+                   bg-black/50 backdrop-blur-sm p-4"
+        onClick={onClose}
+      >
+        {/* ------ modal card ------ */}
+        <motion.div
+          initial={{ scale: 0.88, y: 60, opacity: 0 }}
+          animate={{ scale: 1, y: 0, opacity: 1 }}
+          exit={{ scale: 0.88, y: -40, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 260, damping: 22 }}
+          onClick={(e) => e.stopPropagation()}
+          className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl p-8"
+        >
+          {/* close icon */}
+          <button
+            onClick={onClose}
+            className=" bg-black absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+          >
+            <SvgIcon src="/svg/close.svg" width={18} height={18} />
+          </button>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
-          {[
-            "label",
-            "fullName",
-            "email",
-            "phone",
-            "street",
-            "city",
-            "postalCode",
-            "country",
-          ].map((field) => (
-            <input
-              key={field}
-              name={field}
-              placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-              value={form[field]}
-              onChange={(e) => {
-                setForm({ ...form, [field]: e.target.value });
-              }}
-              className="w-full border rounded p-2"
-              required
-            />
-          ))}
+          <h2 className="text-2xl font-semibold mb-6">
+            {initialData ? "Edit Address" : "Add New Address"}
+          </h2>
 
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={form.isDefault}
-              onChange={(e) => {
-                setForm({ ...form, isDefault: e.target.checked });
-              }}
-            />
-            Set as default address
-          </label>
+          {/* ----------- form ----------- */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {FIELDS.map((field, i) => (
+              <motion.input
+                key={field}
+                value={form[field]}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, [field]: e.target.value }))
+                }
+                placeholder={nice(field)}
+                required
+                className="w-full border rounded-lg px-3 py-2
+                           focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 * i }}
+              />
+            ))}
 
-          <div className="flex justify-end gap-4 pt-3">
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-              }}
-              className="text-gray-600"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="bg-ogr text-white px-4 py-2 rounded"
-            >
-              {initialData ? "Update" : "Save Address"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+            {/* default checkbox */}
+            <label className="flex items-center gap-3 pt-1">
+              <input
+                type="checkbox"
+                checked={form.isDefault}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, isDefault: e.target.checked }))
+                }
+                className="h-5 w-5 accent-indigo-600"
+              />
+              <span>Set as default</span>
+            </label>
+
+            {/* actions */}
+            <div className="flex justify-end gap-4 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="text-gray-600 hover:text-gray-800"
+              >
+                Cancel
+              </button>
+              <motion.button
+                type="submit"
+                disabled={submitting}
+                whileTap={{ scale: 0.96 }}
+                className="bg-ogr text-white px-5 py-2 rounded-lg
+                           hover:bg-ogr/90 transition disabled:opacity-50"
+              >
+                {submitting
+                  ? "Saving…"
+                  : initialData
+                  ? "Update Address"
+                  : "Save Address"}
+              </motion.button>
+            </div>
+          </form>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 }
