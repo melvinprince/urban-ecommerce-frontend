@@ -9,6 +9,8 @@ export default function CategoryTile({
   onHover,
   labelSize = "text-base",
 }) {
+  console.log("Rendering CategoryTile for:", category.image);
+
   return (
     <Link
       href={`/categories/${category.slug}`}
@@ -21,7 +23,7 @@ export default function CategoryTile({
       style={{ aspectRatio: "1 / 1" }}
     >
       <Image
-        src={category.image || "/images/categories/girl-boy.jpeg"}
+        src={category.image}
         alt={category.name}
         fill
         className="object-cover transition-transform duration-300 group-hover:scale-105"
