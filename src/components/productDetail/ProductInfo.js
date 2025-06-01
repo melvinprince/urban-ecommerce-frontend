@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Heart, HeartOff } from "lucide-react";
 import useCartStore from "@/store/cartStore";
@@ -73,13 +74,27 @@ export default function ProductInfo({ product }) {
   if (!product) return null;
 
   return (
-    <div className="flex flex-col gap-6">
+    <motion.div
+      className="flex flex-col gap-6"
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: [0.25, 0.9, 0.3, 1] }}
+    >
       {/* Title & Wishlist */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">{product.title}</h1>
-        <button
+        <motion.h1
+          className="text-4xl font-bold text-gray-900"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.5 }}
+        >
+          {product.title}
+        </motion.h1>
+        <motion.button
           onClick={toggleWishlist}
           disabled={wishLoading}
+          whileTap={{ scale: 0.9 }}
+          whileHover={{ rotate: [0, -10, 10, -10, 10, 0] }}
           className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition"
         >
           {isWishlisted ? (
@@ -87,105 +102,114 @@ export default function ProductInfo({ product }) {
           ) : (
             <Heart size={24} className="text-gray-500 hover:text-red-500" />
           )}
-        </button>
+        </motion.button>
       </div>
 
       {/* Price */}
-      <p className="text-xl font-semibold text-green-700">
+      <motion.p
+        className="text-3xl font-bold text-green-700"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+      >
         {(product.discountPrice ?? product.price).toFixed(2)} QAR
-      </p>
+      </motion.p>
 
-      {/* Size Selector */}
-      {product.sizes?.length > 0 && (
-        <div className="flex flex-col">
-          <label className="font-semibold mb-1">Size:</label>
-          <select
-            value={selectedSize}
-            onChange={(e) => setSelectedSize(e.target.value)}
-            className="border rounded p-2"
-          >
-            {product.sizes.map((sz) => (
-              <option key={sz} value={sz}>
-                {sz}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+      {/* Selectors */}
+      <motion.div className="flex flex-col gap-4">
+        {product.sizes?.length > 0 && (
+          <motion.div>
+            <label className="font-semibold mb-1">Size:</label>
+            <select
+              value={selectedSize}
+              onChange={(e) => setSelectedSize(e.target.value)}
+              className="border rounded p-2"
+            >
+              {product.sizes.map((sz) => (
+                <option key={sz} value={sz}>
+                  {sz}
+                </option>
+              ))}
+            </select>
+          </motion.div>
+        )}
+        {product.colors?.length > 0 && (
+          <motion.div>
+            <label className="font-semibold mb-1">Color:</label>
+            <select
+              value={selectedColor}
+              onChange={(e) => setSelectedColor(e.target.value)}
+              className="border rounded p-2"
+            >
+              {product.colors.map((cl) => (
+                <option key={cl} value={cl}>
+                  {cl}
+                </option>
+              ))}
+            </select>
+          </motion.div>
+        )}
+        <motion.div>
+          <label className="font-semibold mb-1">Quantity:</label>
+          <input
+            type="number"
+            min="1"
+            max={product.stock}
+            value={quantity}
+            onChange={(e) =>
+              setQuantity(
+                Math.min(product.stock, parseInt(e.target.value, 10) || 1)
+              )
+            }
+            className="w-20 border rounded p-2"
+          />
+          <span className="text-sm text-gray-500">
+            {product.stock} in stock
+          </span>
+        </motion.div>
+      </motion.div>
 
-      {/* Color Selector */}
-      {product.colors?.length > 0 && (
-        <div className="flex flex-col">
-          <label className="font-semibold mb-1">Color:</label>
-          <select
-            value={selectedColor}
-            onChange={(e) => setSelectedColor(e.target.value)}
-            className="border rounded p-2"
-          >
-            {product.colors.map((cl) => (
-              <option key={cl} value={cl}>
-                {cl}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {/* Quantity */}
-      <div className="flex flex-col">
-        <label className="font-semibold mb-1">Quantity:</label>
-        <input
-          type="number"
-          min="1"
-          max={product.stock}
-          value={quantity}
-          onChange={(e) =>
-            setQuantity(
-              Math.min(product.stock, parseInt(e.target.value, 10) || 1)
-            )
-          }
-          className="w-20 border rounded p-2"
-        />
-        <span className="text-sm text-gray-500">{product.stock} in stock</span>
-      </div>
-
-      {/* Actions */}
-      <div className="flex items-center gap-4 mt-4">
-        <button
+      {/* Buttons */}
+      <motion.div className="flex items-center gap-4 mt-4">
+        <motion.button
           onClick={handleAddToCart}
           disabled={adding || product.stock === 0}
+          whileTap={{ scale: 0.95 }}
           className="bg-ogr text-white px-6 py-2 rounded hover:bg-opacity-90 transition disabled:opacity-50"
         >
           {adding ? "Adding…" : "Add to Cart"}
-        </button>
-        <button
+        </motion.button>
+        <motion.button
           onClick={handleBuyNow}
           disabled={adding || product.stock === 0}
+          whileTap={{ scale: 0.95 }}
           className="bg-green-600 text-white px-6 py-2 rounded hover:bg-opacity-90 transition disabled:opacity-50"
         >
           Buy Now
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
       {/* Descriptions */}
       {product.shortDescription && (
-        <p className="text-gray-700 mt-6">{product.shortDescription}</p>
+        <motion.p className="text-gray-700 mt-6">
+          {product.shortDescription}
+        </motion.p>
       )}
       {product.description && (
-        <div className="text-gray-600">
+        <motion.div className="text-gray-600">
           <p className="font-semibold">Description:</p>
           <p>{product.description}</p>
-        </div>
+        </motion.div>
       )}
 
-      {/* Stock */}
-      <div>
+      <motion.div>
         <p className="font-semibold">Stock:</p>
         <p>
           {product.stock > 0 ? `${product.stock} available` : "Out of stock"}
         </p>
-      </div>
+      </motion.div>
+
       <ReviewsSection productId={product._id} />
-    </div>
+    </motion.div>
   );
 }

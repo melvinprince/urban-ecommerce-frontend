@@ -3,39 +3,28 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import useCartStore from "@/store/cartStore";
-import useWishlistStore from "@/store/wishlistStore";
-import apiService from "@/lib/apiService";
-import usePopupStore from "@/store/popupStore";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import SvgIcon from "@/components/common/SvgIcon"; // adjust the path if needed
+import SvgIcon from "@/components/common/SvgIcon";
+import useCartStore from "@/store/cartStore";
+import useWishlistStore from "@/store/wishlistStore";
+import usePopupStore from "@/store/popupStore";
+import apiService from "@/lib/apiService";
 
 const SaleBadge = dynamic(() => import("./SaleBadge"), { ssr: false });
 
-export default function ProductCard({ product }) {
-  /* -------------------- helpers -------------------- */
-  // Sizes & colors might arrive as single comma-separated strings inside an array
-  const parseList = (arr = []) =>
-    arr
-      .flatMap((v) => (typeof v === "string" ? v.split(",") : v))
-      .map((v) => v.trim())
-      .filter(Boolean);
+/* ---------- helper for sizes / colors ---------- */
+const parseList = (arr = []) =>
+  arr
+    .flatMap((v) => (typeof v === "string" ? v.split(",") : v))
+    .map((v) => v.trim())
+    .filter(Boolean);
 
+export default function ProductCard({ product }) {
+  /* ---------- derived data ---------- */
   const sizes = parseList(product?.sizes);
   const colors = parseList(product?.colors);
   const primaryCategory = product?.categories?.[0]?.name ?? "";
-
-  /* -------------------- wishlist / cart ------------- */
-  const addItem = useCartStore((s) => s.addItem);
-  const wishlistItems = useWishlistStore((s) => s.items);
-  const addToWishlist = useWishlistStore((s) => s.addItem);
-  const removeWishlist = useWishlistStore((s) => s.removeItem);
-  const { showSuccess, showError } = usePopupStore.getState();
-
-  const [adding, setAdding] = useState(false);
-  const [wishLoading, setWishLoading] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
 
   const hasDiscount =
     product.discountPrice && product.discountPrice < product.price;
@@ -45,24 +34,38 @@ export default function ProductCard({ product }) {
       )
     : 0;
 
+  /* ---------- store actions ---------- */
+  const addItem = useCartStore((s) => s.addItem);
+  const wishlistItems = useWishlistStore((s) => s.items);
+  const addToWishlist = useWishlistStore((s) => s.addItem);
+  const removeWishlist = useWishlistStore((s) => s.removeItem);
+  const { showSuccess, showError } = usePopupStore.getState();
+
+  /* ---------- local state ---------- */
+  const [adding, setAdding] = useState(false);
+  const [wishLoading, setWishLoading] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [justAdded, setJustAdded] = useState(false);
+
+  /* ---------- sync wishlist flag ---------- */
   useEffect(() => {
     setIsWishlisted(wishlistItems.some((i) => i.product._id === product._id));
   }, [wishlistItems, product._id]);
 
-  const handleAddToCart = async (e) => {
+  /* ---------- cart handler ---------- */
+  async function handleAddToCart(e) {
     e.preventDefault();
     if (adding) return;
     setAdding(true);
 
     try {
-      // make sure we have full product data (sizes, colors, stock)
+      // ensure full product with stock/sizes
       let full = product;
-      const needsFetch =
+      if (
         !product.sizes?.length ||
         !product.colors?.length ||
-        product.stock == null;
-
-      if (needsFetch) {
+        product.stock == null
+      ) {
         const { data } = await apiService.products.getBySlug(product.slug);
         full = data;
       }
@@ -76,27 +79,29 @@ export default function ProductCard({ product }) {
       });
 
       if (isWishlisted) {
-        const entry = wishlistItems.find((i) => i.product._id === product._id);
+        const entry = wishlistItems.find((w) => w.product._id === product._id);
         if (entry) await removeWishlist(entry._id);
       }
-
+      setJustAdded(true);
       showSuccess("Added to cart successfully!");
     } catch (err) {
       console.error(err);
       showError(err.message || "Failed to add to cart.");
     } finally {
       setAdding(false);
+      setTimeout(() => setJustAdded(false), 1400);
     }
-  };
+  }
 
-  const toggleWishlist = async (e) => {
+  /* ---------- wishlist toggle ---------- */
+  async function toggleWishlist(e) {
     e.preventDefault();
     if (wishLoading) return;
     setWishLoading(true);
 
     try {
       if (isWishlisted) {
-        const entry = wishlistItems.find((i) => i.product._id === product._id);
+        const entry = wishlistItems.find((w) => w.product._id === product._id);
         if (entry) await removeWishlist(entry._id);
         showSuccess("Removed from wishlist.");
       } else {
@@ -109,90 +114,102 @@ export default function ProductCard({ product }) {
     } finally {
       setWishLoading(false);
     }
-  };
+  }
 
   if (!product) return null;
 
-  /* -------------------- UI ------------------------- */
+  /* ---------- icon src ---------- */
   const iconSrc = isWishlisted
     ? "/svg/wishlist-gold.svg"
     : "/svg/wishlist-black.svg";
 
+  /* ---------- UI ---------- */
   return (
-    <div className="relative w-full h-full border border-ogr rounded-[25px] overflow-hidden  group bg-white hover:scale-102 transition-transform duration-300 shadow-xl">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative w-full h-full bg-white rounded-[25px] overflow-hidden
+                 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2)] backdrop-blur
+                 transition-transform hover:scale-[1.02]"
+    >
       {/* ♥ Wishlist */}
       <button
         onClick={toggleWishlist}
         disabled={wishLoading}
-        className="absolute top-0 right-0 z-10 bg-white p-4 backdrop-blur-sm hover:bg-white transition rounded-bl-[25px]"
+        className="absolute top-0 right-0 bg-white/70 backdrop-blur p-3 rounded-bl-[25px] z-20"
       >
-        <AnimatePresence mode="wait" initial={false}>
+        <AnimatePresence mode="wait">
           <motion.div
-            key={isWishlisted ? "gold" : "black"}
-            initial={{ opacity: 0, scale: 0.6 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.6 }}
-            transition={{ duration: 0.2 }}
+            key={isWishlisted ? "wish-on" : "wish-off"}
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1, transition: { type: "spring" } }}
+            exit={{ scale: 0.6, opacity: 0 }}
+            whileTap={{ scale: 0.8 }}
           >
-            <SvgIcon src={iconSrc} width={24} height={24} />
+            <SvgIcon src={iconSrc} width={22} height={22} />
           </motion.div>
         </AnimatePresence>
       </button>
 
-      {/* ---------------- images ---------------- */}
-      <Link href={`/product/${product.slug}`} className="block">
-        <div className="relative w-full pt-[100%] bg-gray-100 rounded-t-[25px] overflow-hidden">
-          {/* first image */}
+      {/* ----- IMAGE PANEL ----- */}
+      <Link href={`/product/${product.slug}`} className="block group">
+        <motion.div
+          whileHover={{ rotateX: 4, rotateY: -4, scale: 1.02 }}
+          transition={{ type: "spring", stiffness: 180, damping: 15 }}
+          className="relative w-full pt-[100%] overflow-hidden"
+        >
+          {/* base image */}
           <Image
             src={product.images?.[0]}
             fill
             alt={product.title}
-            className="absolute inset-0 object-cover transition-opacity duration-300 group-hover:opacity-0"
+            className="absolute inset-0 object-cover transition-opacity duration-500 group-hover:opacity-0"
+            sizes="(max-width:768px)100vw,25vw"
           />
-
-          {/* second image on hover (if exists) */}
+          {/* hover image */}
           {product.images?.[1] && (
             <Image
               src={product.images[1]}
               fill
               alt={`${product.title} alt`}
-              className="absolute inset-0 object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+              className="absolute inset-0 object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+              sizes="(max-width:768px)100vw,25vw"
             />
           )}
-        </div>
-        {hasDiscount && <SaleBadge discountPercent={discountPercent} />}
+          {hasDiscount && <SaleBadge discountPercent={discountPercent} />}
+        </motion.div>
       </Link>
 
-      {/* ---------------- details ---------------- */}
-      <div className="p-4 flex flex-col gap-1">
-        {/* category */}
+      {/* ----- DETAILS ----- */}
+      <div className="p-4 flex flex-col gap-2">
+        {/* category chip */}
         {primaryCategory && (
-          <span className="self-start text-lg text-ogr tracking-wide uppercase border border-ogr rounded-full px-2 py-0.5 font-bold">
+          <span className="self-start text-xs font-semibold tracking-wider uppercase rounded-full px-3 py-1 border border-ogr text-ogr">
             {primaryCategory}
           </span>
         )}
 
         {/* title */}
         <Link href={`/product/${product.slug}`}>
-          <h2 className="text-2xl font-semibold text-gray-800 truncate mt-1">
-            {product.title.toUpperCase()}
+          <h2 className="text-lg md:text-xl font-semibold line-clamp-2">
+            {product.title}
           </h2>
         </Link>
 
         {/* price */}
-        <p className="text-4xl font-bold text-gray-600">
+        <p className="text-2xl font-bold text-gray-800">
           {(product.discountPrice ?? product.price).toFixed(2)} QAR
         </p>
 
         {/* sizes */}
         {sizes.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-2">
-            {sizes.map((size) => (
+          <div className="flex flex-wrap gap-1">
+            {sizes.map((s) => (
               <span
-                key={size}
-                className="text-[12px] px-2 py-0.5 border border-gray-300 rounded-full"
+                key={s}
+                className="text-[10px] px-1.5 py-0.5 border rounded-full"
               >
-                {size}
+                {s}
               </span>
             ))}
           </div>
@@ -200,27 +217,32 @@ export default function ProductCard({ product }) {
 
         {/* colors */}
         {colors.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1 items-center">
-            {colors.map((color) => (
+          <div className="flex gap-1 items-center">
+            {colors.map((c) => (
               <span
-                key={color}
-                className="w-5 h-5 rounded-full border border-gray-300"
-                style={{ backgroundColor: color.toLowerCase() }}
-                title={color}
+                key={c}
+                className="w-4 h-4 rounded-full border"
+                style={{ backgroundColor: c.toLowerCase() }}
+                title={c}
               />
             ))}
           </div>
         )}
-
-        {/* add to cart button */}
-        <button
-          onClick={handleAddToCart}
-          disabled={adding}
-          className="mt-4 bg-ogr text-white py-2 rounded-lg font-semibold hover:bg-opacity-90 transition disabled:opacity-50"
-        >
-          {adding ? "Adding…" : "Add to Cart"}
-        </button>
       </div>
-    </div>
+
+      {/* ----- ADD-TO-CART CTA ----- */}
+      <motion.button
+        onClick={handleAddToCart}
+        disabled={adding}
+        initial={{ y: 70 }}
+        animate={{ y: 0 }}
+        whileHover={{ scale: 1.03 }}
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 mb-4
+                   bg-ogr text-white px-10 py-2 rounded-full font-semibold
+                   shadow-lg hover:shadow-xl transition disabled:opacity-50"
+      >
+        {adding ? "Adding…" : justAdded ? "✓ Added" : "Add to Cart"}
+      </motion.button>
+    </motion.div>
   );
 }
