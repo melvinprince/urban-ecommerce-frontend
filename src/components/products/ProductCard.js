@@ -145,7 +145,7 @@ export default function ProductCard({ product }) {
       className="
         relative w-full h-full bg-white rounded-[25px] overflow-hidden
         shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2)] backdrop-blur
-        transition-transform hover:scale-[1.02] border border-gray-200
+        transition-transform hover:scale-[1.02] border border-gray-200 pb-[1rem] 
       "
     >
       {/* ♥ Wishlist Button */}
@@ -206,12 +206,12 @@ export default function ProductCard({ product }) {
       </Link>
 
       {/* ----- DETAILS ----- */}
-      <div className="p-4 flex flex-col gap-2">
+      <div className="p-5 flex flex-col gap-2">
         {/* category chip */}
         {primaryCategory && (
           <span
             className="
-            self-start text-xs font-semibold tracking-wider uppercase
+            self-start text-lg font-semibold tracking-wider uppercase
             rounded-full px-3 py-1 border border-ogr text-ogr
           "
           >

@@ -79,7 +79,7 @@ export default function CategoryProductsContent() {
         <ProductFilters showCategory={false} />
 
         <div className="flex-1">
-          <ProductGrid products={products} />
+          <ProductGrid products={products} type="list" />
 
           {totalPages > 1 && (
             <div className="flex justify-center mt-8 gap-2 flex-wrap">

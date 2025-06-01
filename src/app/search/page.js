@@ -62,7 +62,7 @@ export default function SearchPage() {
             <Loader text="Loading products..." />
           ) : products.length > 0 ? (
             <>
-              <ProductGrid products={products} />
+              <ProductGrid products={products} type="list" />
               <div className="flex justify-center mt-8 gap-2 flex-wrap">
                 <button
                   onClick={() => handlePageChange(pageParam - 1)}
