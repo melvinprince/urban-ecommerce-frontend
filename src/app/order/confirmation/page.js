@@ -1,13 +1,25 @@
+// app/checkout/page.jsx  →  OrderConfirmationPage
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+
 import useCartStore from "@/store/cartStore";
 import useCheckoutStore from "@/store/checkoutStore";
+
 import InvoiceDownloadButton from "@/components/invoice/InvoiceDownloadButton";
+import SvgIcon from "@/components/common/SvgIcon"; // if you have a helper
+
+/* glass style shortcut */
+const glass =
+  "bg-white/30 backdrop-blur-lg border border-white/40 shadow-[0_8px_30px_rgba(0,0,0,0.12)]";
 
 export default function OrderConfirmationPage() {
+  /* ---------------- state / stores ---------------- */
   const searchParams = useSearchParams();
+  const router = useRouter();
   const orderId = searchParams.get("id");
 
   const [order, setOrder] = useState(null);
@@ -16,110 +28,207 @@ export default function OrderConfirmationPage() {
   const [cartCleared, setCartCleared] = useState(false);
 
   const clearCart = useCartStore((s) => s.clearCart);
-  const { buyNowProduct, fromBuyNow, clearBuyNowProduct } = useCheckoutStore();
+  const fromBuyNow = useCheckoutStore((s) => s.fromBuyNow);
+  const clearBuyNowProduct = useCheckoutStore((s) => s.clearBuyNowProduct);
 
+  /* ---------------- fetch order ------------------- */
   useEffect(() => {
-    async function fetchOrder() {
+    (async () => {
       if (!orderId) {
         setError("Invalid order ID");
         setLoading(false);
         return;
       }
-
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/orders/${orderId}`
         );
         const json = await res.json();
-
         if (!res.ok) throw new Error(json.message || "Failed to fetch order");
-
         setOrder(json.data);
 
-        // ✅ Clear cart only if it's NOT a Buy Now checkout
+        /* cleanup */
         if (!fromBuyNow && !cartCleared) {
           clearCart();
           setCartCleared(true);
         }
-
-        // ✅ Always clean up Buy Now state
         clearBuyNowProduct();
       } catch (err) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
-    }
-
-    fetchOrder();
+    })();
   }, [orderId, cartCleared, clearCart, fromBuyNow, clearBuyNowProduct]);
 
-  if (loading)
-    return <div className="p-6 text-center">Loading order details…</div>;
-  if (error)
-    return <div className="p-6 text-red-500 text-center">Error: {error}</div>;
+  /* ---------------- early states ------------------ */
+  if (loading) return <Loading />;
+  if (error) return <ErrorMsg msg={error} />;
   if (!order) return null;
 
+  /* ---------------- page -------------------------- */
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold text-center text-green-700">
-        🎉 Thank you for your order!
-      </h1>
-      <div className="text-center text-gray-600">
-        Order ID: <strong>{order.customOrderId}</strong>
-        <br />
-        Placed on: {new Date(order.createdAt).toLocaleString()}
-      </div>
+    <main className="min-h-screen w-full relative overflow-hidden">
+      {/* soft blobs */}
+      <Blob className="top-[-120px] left-[-140px] bg-emerald-300" />
+      <Blob className="bottom-[-160px] right-[-110px] bg-pink-300" />
 
-      <section className="border p-4 rounded">
-        <h2 className="font-semibold mb-2">Payment Summary</h2>
-        <p>
-          Method: <strong>{order.paymentMethod.toUpperCase()}</strong>
-        </p>
-        <p>
-          Status: <strong>{order.isPaid ? "Paid ✅" : "Not Paid ❌"}</strong>
-        </p>
-        {order.paidAt && (
-          <p>Paid At: {new Date(order.paidAt).toLocaleString()}</p>
-        )}
-        <p className="font-bold mt-2">
-          Total: {order.totalAmount.toFixed(2)} QAR
-        </p>
-      </section>
+      {/* content */}
+      <section className="relative mx-auto max-w-6xl w-full px-6 py-20">
+        {/* logo */}
+        <motion.div
+          initial={{ y: -40, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="flex justify-center mb-12"
+        >
+          <Image
+            src="/brandData/URBAN-logo-transparent.png"
+            alt="Company logo"
+            width={160}
+            height={80}
+            className="h-24 w-auto"
+          />
+        </motion.div>
 
-      <section className="border p-4 rounded">
-        <h2 className="font-semibold mb-2">Shipping Details</h2>
-        <p>{order.address.fullName}</p>
-        <p>
-          {order.address.email} • {order.address.phone}
-        </p>
-        <p>
-          {order.address.street}, {order.address.city}
-        </p>
-        <p>
-          {order.address.postalCode}, {order.address.country}
-        </p>
-      </section>
+        {/* headline */}
+        <motion.h1
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
+          className="text-center text-5xl md:text-7xl font-extrabold text-emerald-700 mb-16"
+        >
+          Thank you for your order! 🎉
+        </motion.h1>
 
-      <section className="border p-4 rounded">
-        <h2 className="font-semibold mb-2">Items</h2>
-        <ul className="space-y-3">
-          {order.items.map((item, idx) => (
-            <li key={idx} className="border rounded p-2">
-              <div className="font-medium">{item.product.title}</div>
-              <div className="text-sm text-gray-600">
-                {item.size && <>Size: {item.size} • </>}
-                {item.color && <>Color: {item.color} • </>}
-                Qty: {item.quantity}
-              </div>
-              <div className="text-green-700 font-semibold">
-                {(item.price * item.quantity).toFixed(2)} QAR
-              </div>
-            </li>
-          ))}
-        </ul>
+        {/* GRID ------------------------------------------------------- */}
+        <AnimatePresence>
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: {},
+              visible: { transition: { staggerChildren: 0.07 } },
+            }}
+            className="grid lg:grid-cols-2 gap-12"
+          >
+            {/* order meta */}
+            <Card>
+              <Title>Order Details</Title>
+              <Info label="Order ID" value={order.customOrderId} bold />
+              <Info
+                label="Placed on"
+                value={new Date(order.createdAt).toLocaleString()}
+              />
+            </Card>
+
+            {/* payment summary */}
+            <Card>
+              <Title>Payment</Title>
+              <Info label="Method" value={order.paymentMethod.toUpperCase()} />
+              <Info
+                label="Status"
+                value={order.isPaid ? "Paid ✅" : "Not Paid ❌"}
+              />
+              {order.paidAt && (
+                <Info
+                  label="Paid At"
+                  value={new Date(order.paidAt).toLocaleString()}
+                />
+              )}
+              <Info
+                label="Total"
+                value={`${order.totalAmount.toFixed(2)} QAR`}
+                bold
+              />
+            </Card>
+
+            {/* shipping */}
+            <Card>
+              <Title>Shipping Address</Title>
+              <p className="font-medium text-lg">{order.address.fullName}</p>
+              <p className="text-base text-gray-700">
+                {order.address.email} • {order.address.phone}
+              </p>
+              <p className="text-base text-gray-700">
+                {order.address.street}, {order.address.city}
+              </p>
+              <p className="text-base text-gray-700">
+                {order.address.postalCode}, {order.address.country}
+              </p>
+            </Card>
+
+            {/* items */}
+            <Card>
+              <Title>Items</Title>
+              <ul className="max-h-[20rem] space-y-4 overflow-y-auto pr-2">
+                {order.items.map((it, idx) => (
+                  <li key={idx} className={`p-4 rounded-lg border ${glass}`}>
+                    <p className="font-semibold line-clamp-1 text-lg">
+                      {it.product.title}
+                    </p>
+                    <p className="text-base text-gray-600">
+                      {it.size && <>Size: {it.size} &nbsp;</>}
+                      {it.color && <>Color: {it.color} &nbsp;</>}
+                      Qty: {it.quantity}
+                    </p>
+                    <p className="font-bold text-ogr mt-2 text-lg">
+                      {(it.price * it.quantity).toFixed(2)} QAR
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          </motion.div>
+        </AnimatePresence>
+
+        <div className="mt-20 flex justify-center">
+          <InvoiceDownloadButton order={order} />
+        </div>
       </section>
-      <InvoiceDownloadButton order={order} />
-    </div>
+    </main>
   );
 }
+
+/* ---------------- reusable small components ---------------- */
+const Loading = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <span className="animate-pulse text-2xl font-medium">Loading order…</span>
+  </div>
+);
+
+const ErrorMsg = ({ msg }) => (
+  <div className="min-h-screen flex items-center justify-center text-red-600">
+    <p className="text-xl font-semibold">Error: {msg}</p>
+  </div>
+);
+
+const Card = ({ children }) => (
+  <motion.section
+    variants={{ hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0 } }}
+    className={`rounded-3xl p-8 space-y-5 ${glass}`}
+  >
+    {children}
+  </motion.section>
+);
+
+const Title = ({ children, icon }) => (
+  <h3 className="flex items-center gap-3 font-semibold text-xl mb-3">
+    {children}
+  </h3>
+);
+
+const Info = ({ label, value, bold }) => (
+  <p className={`${bold ? "font-semibold text-lg" : "text-lg text-gray-700"}`}>
+    {label}: <span className="font-medium">{value}</span>
+  </p>
+);
+
+const Blob = ({ className }) => (
+  <motion.div
+    initial={{ scale: 0, opacity: 0 }}
+    animate={{ scale: 1.4, opacity: 0.12 }}
+    transition={{ duration: 1.4, ease: "easeOut" }}
+    className={`pointer-events-none fixed w-[32rem] h-[32rem] rounded-full blur-[180px] ${className}`}
+  />
+);
