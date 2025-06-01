@@ -30,7 +30,7 @@ api.interceptors.response.use(
   }
 );
 
-// 🧩 Grouped API Service
+// Grouped API Service
 const apiService = {
   auth: {
     register: (data) => api.post("/api/auth/register", data),

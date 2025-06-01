@@ -11,6 +11,13 @@ import useWishlistStore from "@/store/wishlistStore";
 import usePopupStore from "@/store/popupStore";
 import apiService from "@/lib/apiService";
 
+const AddToCartButton = dynamic(
+  () => import("@/components/common/AddToCartButton"),
+  {
+    ssr: false,
+  }
+);
+
 const SaleBadge = dynamic(() => import("./SaleBadge"), { ssr: false });
 
 /* ---------- helper for sizes / colors ---------- */
@@ -34,7 +41,7 @@ export default function ProductCard({ product }) {
       )
     : 0;
 
-  /* ---------- store actions ---------- */
+  /* ---------- store hooks ---------- */
   const addItem = useCartStore((s) => s.addItem);
   const wishlistItems = useWishlistStore((s) => s.items);
   const addToWishlist = useWishlistStore((s) => s.addItem);
@@ -49,7 +56,8 @@ export default function ProductCard({ product }) {
 
   /* ---------- sync wishlist flag ---------- */
   useEffect(() => {
-    setIsWishlisted(wishlistItems.some((i) => i.product._id === product._id));
+    const inWishlist = wishlistItems.some((w) => w.product._id === product._id);
+    setIsWishlisted(inWishlist);
   }, [wishlistItems, product._id]);
 
   /* ---------- cart handler ---------- */
@@ -59,7 +67,7 @@ export default function ProductCard({ product }) {
     setAdding(true);
 
     try {
-      // ensure full product with stock/sizes
+      // if product lacks sizes, colors, or stock, fetch full details:
       let full = product;
       if (
         !product.sizes?.length ||
@@ -78,10 +86,14 @@ export default function ProductCard({ product }) {
         color: full.colors?.[0] ?? null,
       });
 
+      // if it was already in wishlist, remove it:
       if (isWishlisted) {
         const entry = wishlistItems.find((w) => w.product._id === product._id);
-        if (entry) await removeWishlist(entry._id);
+        if (entry) {
+          await removeWishlist(entry._id);
+        }
       }
+
       setJustAdded(true);
       showSuccess("Added to cart successfully!");
     } catch (err) {
@@ -102,7 +114,9 @@ export default function ProductCard({ product }) {
     try {
       if (isWishlisted) {
         const entry = wishlistItems.find((w) => w.product._id === product._id);
-        if (entry) await removeWishlist(entry._id);
+        if (entry) {
+          await removeWishlist(entry._id);
+        }
         showSuccess("Removed from wishlist.");
       } else {
         await addToWishlist(product);
@@ -118,25 +132,30 @@ export default function ProductCard({ product }) {
 
   if (!product) return null;
 
-  /* ---------- icon src ---------- */
+  /* ---------- icon src for heart ---------- */
   const iconSrc = isWishlisted
     ? "/svg/wishlist-gold.svg"
     : "/svg/wishlist-black.svg";
 
-  /* ---------- UI ---------- */
+  /* ---------- UI rendering ---------- */
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative w-full h-full bg-white rounded-[25px] overflow-hidden
-                 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2)] backdrop-blur
-                 transition-transform hover:scale-[1.02]"
+      className="
+        relative w-full h-full bg-white rounded-[25px] overflow-hidden
+        shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2)] backdrop-blur
+        transition-transform hover:scale-[1.02] border border-gray-200
+      "
     >
-      {/* ♥ Wishlist */}
+      {/* ♥ Wishlist Button */}
       <button
         onClick={toggleWishlist}
         disabled={wishLoading}
-        className="absolute top-0 right-0 bg-white/70 backdrop-blur p-3 rounded-bl-[25px] z-20"
+        className="
+          absolute top-0 right-0 bg-white/70 backdrop-blur p-3
+          rounded-bl-[25px] z-20
+        "
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -163,7 +182,10 @@ export default function ProductCard({ product }) {
             src={product.images?.[0]}
             fill
             alt={product.title}
-            className="absolute inset-0 object-cover transition-opacity duration-500 group-hover:opacity-0"
+            className="
+              absolute inset-0 object-cover
+              transition-opacity duration-500 group-hover:opacity-0
+            "
             sizes="(max-width:768px)100vw,25vw"
           />
           {/* hover image */}
@@ -172,7 +194,10 @@ export default function ProductCard({ product }) {
               src={product.images[1]}
               fill
               alt={`${product.title} alt`}
-              className="absolute inset-0 object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+              className="
+                absolute inset-0 object-cover opacity-0
+                transition-opacity duration-500 group-hover:opacity-100
+              "
               sizes="(max-width:768px)100vw,25vw"
             />
           )}
@@ -184,7 +209,12 @@ export default function ProductCard({ product }) {
       <div className="p-4 flex flex-col gap-2">
         {/* category chip */}
         {primaryCategory && (
-          <span className="self-start text-xs font-semibold tracking-wider uppercase rounded-full px-3 py-1 border border-ogr text-ogr">
+          <span
+            className="
+            self-start text-xs font-semibold tracking-wider uppercase
+            rounded-full px-3 py-1 border border-ogr text-ogr
+          "
+          >
             {primaryCategory}
           </span>
         )}
@@ -230,19 +260,12 @@ export default function ProductCard({ product }) {
         )}
       </div>
 
-      {/* ----- ADD-TO-CART CTA ----- */}
-      <motion.button
+      {/* ----- ADD-TO-CART BUTTON (UI-only) ----- */}
+      <AddToCartButton
+        adding={adding}
+        justAdded={justAdded}
         onClick={handleAddToCart}
-        disabled={adding}
-        initial={{ y: 70 }}
-        animate={{ y: 0 }}
-        whileHover={{ scale: 1.03 }}
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 mb-4
-                   bg-ogr text-white px-10 py-2 rounded-full font-semibold
-                   shadow-lg hover:shadow-xl transition disabled:opacity-50"
-      >
-        {adding ? "Adding…" : justAdded ? "✓ Added" : "Add to Cart"}
-      </motion.button>
+      />
     </motion.div>
   );
 }
