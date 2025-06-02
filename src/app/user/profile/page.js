@@ -19,19 +19,19 @@ export default function Page() {
       {/* Action Tiles */}
       <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[5rem] px-4 ">
         <ProfileTile
-          href="/profile/wishlist"
+          href="/user/profile/wishlist"
           src="/json/heart.json"
           title="Wishlist"
           description="Review and manage items you’ve saved for later"
         />
         <ProfileTile
-          href="/profile/orders"
+          href="/user/profile/orders"
           src="/json/credit-card.json"
           title="Orders"
           description="Track your purchases and view order history"
         />
         <ProfileTile
-          href="/profile/addresses"
+          href="/user/profile/addresses"
           src="/json/location.json"
           title="Addresses"
           description="Add or edit your shipping and billing addresses"

@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
+import Loader from "@/components/common/Loader";
 import WishlistItem from "@/components/wishlist/WishlistItem";
 import useWishlistStore from "@/store/wishlistStore";
-import Loader from "@/components/common/Loader";
 
 export default function WishlistContent() {
   const items = useWishlistStore((s) => s.items);
@@ -16,7 +16,7 @@ export default function WishlistContent() {
   }, [fetchWishlist]);
 
   if (!isLoaded) {
-    return <Loader />; // ✅ Unified Loader
+    return <Loader />;
   }
 
   if (error) {
@@ -25,12 +25,12 @@ export default function WishlistContent() {
 
   if (items.length === 0) {
     return (
-      <p className="text-center py-10 text-gray-600">Your wishlist is empty.</p>
+      <p className="text-center py-10 text-black/70">Your wishlist is empty.</p>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="grid grid-cols-5 gap-8 mx-auto">
       {items.map((item) => (
         <WishlistItem key={item._id} item={item} />
       ))}
