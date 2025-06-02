@@ -1,23 +1,28 @@
+// app/user/profile/orders/[id]/page.jsx
 "use client";
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { motion } from "framer-motion";
 import Loader from "@/components/common/Loader";
-import usePopupStore from "@/store/popupStore";
-import InvoiceDownloadButton from "../invoice/InvoiceDownloadButton";
 import EditOrderFormModal from "@/components/orders/EditOrderFormModal";
 import apiService from "@/lib/apiService";
+import usePopupStore from "@/store/popupStore";
 import useAuthStore from "@/store/authStore";
+import InvoiceDownloadButton from "../invoice/InvoiceDownloadButton";
 
 export default function OrderDetailPage() {
+  /* ───────────── state */
   const { id } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showEditForm, setShowEditForm] = useState(false);
 
+  /* ───────────── stores */
   const { showError, showSuccess } = usePopupStore();
-  const auth = useAuthStore();
+  const { isLoggedIn } = useAuthStore();
 
+  /* ───────────── fetch once */
   useEffect(() => {
     async function fetchOrder() {
       try {
@@ -29,124 +34,166 @@ export default function OrderDetailPage() {
         setLoading(false);
       }
     }
-
     if (id) fetchOrder();
   }, [id, showError]);
 
+  /* ───────────── cancel handler */
   async function handleCancelOrder() {
-    const confirmed = window.confirm(
-      "Are you sure you want to cancel this order?"
-    );
-    if (!confirmed) return;
+    if (!window.confirm("Are you sure you want to cancel this order?")) return;
 
     try {
-      if (auth?.isLoggedIn) {
-        const updated = await apiService.orders.cancel(order.customOrderId);
-        showSuccess("Order cancelled successfully");
-        setOrder(updated);
+      let updated;
+      if (isLoggedIn) {
+        updated = await apiService.orders.cancel(order.customOrderId);
       } else {
         const email = prompt("Please enter the email used during checkout:");
-        if (!email || !email.trim())
+        if (!email?.trim())
           return showError("Email is required to cancel the order.");
-
-        const updated = await apiService.orders.cancelGuest({
+        updated = await apiService.orders.cancelGuest({
           customOrderId: order.customOrderId,
           email: email.trim(),
         });
-
-        showSuccess("Order cancelled successfully");
-        setOrder(updated);
       }
+      showSuccess("Order cancelled successfully");
+      setOrder(updated);
     } catch (err) {
       showError(err.message);
     }
   }
 
-  if (loading) return <Loader />;
+  /* ───────────── gates */
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-sgr/50">
+        <Loader />
+      </div>
+    );
   if (!order)
     return (
-      <div className="p-6 text-center text-gray-600">Order not found.</div>
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        Order not found.
+      </div>
     );
 
+  /* ───────────── UI */
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Order Details</h1>
-
-      <div className="mb-4">
-        <p>
-          <strong>Order ID:</strong> {order.customOrderId}
-        </p>
-        <p>
-          <strong>Placed on:</strong>{" "}
-          {new Date(order.createdAt).toLocaleString()}
-        </p>
-        <p>
-          <strong>Status:</strong> {order.isPaid ? "Paid" : "Not Paid"} (
-          {order.paymentMethod})
-        </p>
-      </div>
-
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">Shipping Address</h2>
-        <p>{order.address?.fullName}</p>
-        <p>
-          {order.address?.street}, {order.address?.city}
-        </p>
-        <p>
-          {order.address?.country} - {order.address?.postalCode}
-        </p>
-        <p>📧 {order.address?.email}</p>
-        <p>📞 {order.address?.phone}</p>
-      </div>
-
-      <div>
-        <h2 className="text-lg font-semibold mb-2">Items</h2>
-        <ul className="divide-y divide-gray-200">
-          {order.items.map((item, i) => (
-            <li key={i} className="py-2">
-              <div className="flex justify-between">
-                <div>
-                  <div className="font-medium">{item.product?.title}</div>
-                  <div className="text-sm text-gray-500">
-                    {item.size && `Size: ${item.size}`}{" "}
-                    {item.color && `Color: ${item.color}`}
-                  </div>
-                </div>
-                <div className="text-sm text-gray-700">
-                  QAR {item.price} × {item.quantity}
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="mt-6 text-right font-semibold">
-        Total: QAR {order.totalAmount}
-      </div>
-
-      <div className="mt-4 flex flex-col gap-3">
-        <InvoiceDownloadButton order={order} />
-
-        {order.canModify && (
-          <>
-            <button
-              onClick={handleCancelOrder}
-              className="bg-red-600 text-white px-4 py-2 rounded"
+    <div className="min-h-[60vh] bg-sgr/50 py-[2rem] px-[10rem] flex items-center justify-center">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="max-w-4xl mx-auto bg-white rounded-3xl shadow-lg p-10 space-y-8"
+      >
+        {/* header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-eulogy text-gray-800">
+              Order&nbsp;#{order.customOrderId}
+            </h1>
+            <p className="text-gray-500 mt-1 text-2xl">
+              Placed on&nbsp;
+              {new Date(order.createdAt).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span
+              className={`px-4 py-1 rounded-full font-medium text-2xl ${
+                order.isPaid
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+              }`}
             >
-              Cancel Order
-            </button>
+              {order.isPaid ? "PAID" : "UNPAID"}
+            </span>
+            <span className="px-4 py-1 rounded-full text-2xl bg-gray-200 text-gray-700">
+              {order.paymentMethod.toUpperCase()}
+            </span>
+          </div>
+        </div>
 
-            <button
-              onClick={() => setShowEditForm(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded"
-            >
-              ✏️ Edit Order Details
-            </button>
-          </>
-        )}
-      </div>
+        {/* address & totals */}
+        <div className="grid md:grid-cols-2 gap-10">
+          <motion.div
+            initial={{ scale: 0.95 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
+            className="space-y-2"
+          >
+            <h2 className="text-2xl font-semibold">Shipping Address</h2>
+            <div className="text-gray-700 leading-relaxed text-xl">
+              <p>{order.address?.fullName}</p>
+              <p>
+                {order.address?.street}, {order.address?.city}
+              </p>
+              <p>
+                {order.address?.country} – {order.address?.postalCode}
+              </p>
+              <p>📧 {order.address?.email}</p>
+              <p>📞 {order.address?.phone}</p>
+            </div>
+          </motion.div>
 
+          <motion.div
+            initial={{ scale: 0.95 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.3, type: "spring", stiffness: 300 }}
+            className="bg-gray-50 rounded-2xl p-6 shadow-inner"
+          >
+            <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
+            <div className="space-y-2 text-gray-700">
+              {order.items.map((it, i) => (
+                <div key={i} className="flex justify-between">
+                  <span className="text-xl">
+                    {it.quantity} × {it.product?.title}
+                  </span>
+                  <span className="text-xl">
+                    QAR&nbsp;{(it.price * it.quantity).toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="border-t mt-4 pt-4 flex justify-between text-xl font-bold">
+              <span>Total</span>
+              <span>QAR&nbsp;{order.totalAmount}</span>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* action buttons */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+        >
+          <InvoiceDownloadButton order={order} />
+
+          {order.canModify && (
+            <div className="flex gap-3">
+              <button
+                onClick={handleCancelOrder}
+                className="px-5 py-3 text-2xl rounded-full bg-red-600 hover:bg-red-700 text-white transition"
+              >
+                Cancel Order
+              </button>
+              <button
+                onClick={() => setShowEditForm(true)}
+                className="px-5 py-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white transition text-2xl"
+              >
+                ✏️ Edit Details
+              </button>
+            </div>
+          )}
+        </motion.div>
+      </motion.div>
+
+      {/* modal */}
       {showEditForm && (
         <EditOrderFormModal
           order={order}
