@@ -20,15 +20,15 @@ export default function ConfirmModal() {
 
   return createPortal(
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-xl shadow-xl max-w-sm w-full text-center">
-        <p className="text-lg font-medium">{message}</p>
-        <div className="mt-6 flex justify-center space-x-4">
+      <div className="bg-white p-6 rounded-xl shadow-xl h-[15rem] w-[60rem] text-center flex flex-col items-center justify-center">
+        <p className="text-3xl font-medium">{message}</p>
+        <div className="mt-6 text-2xl flex justify-center space-x-4">
           <button
             onClick={() => {
               onConfirm?.();
               closeConfirm();
             }}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="px-[2rem] py-[1rem] bg-sgr text-3xl text-white hover:cursor-pointer rounded hover:bg-ogr transition-all duration-300"
           >
             Confirm
           </button>
@@ -37,7 +37,7 @@ export default function ConfirmModal() {
               onCancel?.();
               closeConfirm();
             }}
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+            className="px-[2rem] py-[1rem] bg-gray-300 text-3xl hover:cursor-pointer text-gray-700 rounded hover:bg-gray-400 transition-all duration-300"
           >
             Cancel
           </button>

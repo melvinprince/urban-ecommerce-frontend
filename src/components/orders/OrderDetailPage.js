@@ -6,23 +6,26 @@ import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Loader from "@/components/common/Loader";
 import EditOrderFormModal from "@/components/orders/EditOrderFormModal";
+import ConfirmModal from "@/components/common/ConfirmModal"; // ← NEW
 import apiService from "@/lib/apiService";
-import usePopupStore from "@/store/popupStore";
+import usePopupStore from "@/store/popUpStore";
 import useAuthStore from "@/store/authStore";
+import useConfirmStore from "@/store/useConfirmStore"; // ← NEW
 import InvoiceDownloadButton from "../invoice/InvoiceDownloadButton";
 
 export default function OrderDetailPage() {
-  /* ───────────── state */
+  /* ────────── local state */
   const { id } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showEditForm, setShowEditForm] = useState(false);
 
-  /* ───────────── stores */
+  /* ────────── stores */
   const { showError, showSuccess } = usePopupStore();
   const { isLoggedIn } = useAuthStore();
+  const { openConfirm } = useConfirmStore(); // ← NEW
 
-  /* ───────────── fetch once */
+  /* ────────── fetch order */
   useEffect(() => {
     async function fetchOrder() {
       try {
@@ -37,10 +40,8 @@ export default function OrderDetailPage() {
     if (id) fetchOrder();
   }, [id, showError]);
 
-  /* ───────────── cancel handler */
-  async function handleCancelOrder() {
-    if (!window.confirm("Are you sure you want to cancel this order?")) return;
-
+  /* ────────── real cancel */
+  async function doCancel() {
     try {
       let updated;
       if (isLoggedIn) {
@@ -61,7 +62,16 @@ export default function OrderDetailPage() {
     }
   }
 
-  /* ───────────── gates */
+  /* ────────── open confirm modal */
+  function handleCancelOrder() {
+    openConfirm({
+      message: "Are you sure you want to cancel this order?",
+      onConfirm: () => doCancel(),
+      onCancel: () => {},
+    });
+  }
+
+  /* ────────── gates */
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center bg-sgr/50">
@@ -75,9 +85,12 @@ export default function OrderDetailPage() {
       </div>
     );
 
-  /* ───────────── UI */
+  /* ────────── UI */
   return (
     <div className="min-h-[60vh] bg-sgr/50 py-[2rem] px-[10rem] flex items-center justify-center">
+      {/* global confirm modal listens to store */}
+      <ConfirmModal />
+
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -165,7 +178,7 @@ export default function OrderDetailPage() {
           </motion.div>
         </div>
 
-        {/* action buttons */}
+        {/* actions */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -186,14 +199,13 @@ export default function OrderDetailPage() {
                 onClick={() => setShowEditForm(true)}
                 className="px-5 py-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white transition text-2xl"
               >
-                ✏️ Edit Details
+                Edit Details
               </button>
             </div>
           )}
         </motion.div>
       </motion.div>
 
-      {/* modal */}
       {showEditForm && (
         <EditOrderFormModal
           order={order}
