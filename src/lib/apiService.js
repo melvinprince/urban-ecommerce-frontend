@@ -131,6 +131,11 @@ const apiService = {
     applyCoupon: (code, subtotal, email) =>
       api.post("/api/coupons/apply", { code, subtotal, email }),
   },
+
+  newsletter: {
+    subscribe: (data) => api.post("/api/newsletter", data),
+    getAll: () => api.get("/api/newsletter"),
+  },
 };
 
 export default apiService;

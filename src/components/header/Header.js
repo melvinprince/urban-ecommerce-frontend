@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import useAuthStore from "@/store/authStore";
 import useCartStore from "@/store/cartStore";
-import HeaderLogo from "./HeaderLogo";
 import HeaderSearch from "./HeaderSearch";
 import HeaderLinks from "./HeaderLinks";
 import HeaderAuth from "./HeaderAuth";
 import HeaderCart from "./HeaderCart";
+import Logo from "../common/Logo";
 
 export default function Header() {
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
@@ -47,7 +47,7 @@ export default function Header() {
 
   return (
     <header className="grid grid-cols-3 justify-center items-center bg-black px-[5rem] py-[2rem] gap-4">
-      <HeaderLogo />
+      <Logo h="5rem" w="15rem" />
       <HeaderSearch
         query={query}
         setQuery={setQuery}

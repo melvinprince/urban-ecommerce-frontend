@@ -1,9 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 
-export default function HeaderLogo() {
+export default function Logo({ h, w }) {
   return (
-    <div className="h-[5rem] w-[15rem] relative">
+    <div className={`h-[${h}] w-[${w}] relative`}>
       <Link href="/" className="">
         <Image
           src="/brandData/URBAN-logo-transparent.png"
