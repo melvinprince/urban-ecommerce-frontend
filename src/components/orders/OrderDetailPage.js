@@ -10,7 +10,7 @@ import apiService from "@/lib/apiService";
 import useAuthStore from "@/store/authStore";
 
 export default function OrderDetailPage() {
-  const { id } = useParams(); // customOrderId
+  const { id } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showEditForm, setShowEditForm] = useState(false);
