@@ -1,182 +1,36 @@
+// app/user/login-register/page.jsx
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import useAuthStore from "@/store/authStore";
-import apiService from "@/lib/apiService";
-import usePopupStore from "@/store/popupStore";
-import PopupAlert from "@/components/PopupAlert";
+import AuthCarousel from "@/components/LoginRegister/AuthCarousel";
+import AuthForm from "@/components/LoginRegister/AuthForm";
+
+// Example carousel data. Replace these URLs/text with your own.
+const data = [
+  {
+    image: "/images/loginRegister/carousel1.png",
+    text: "Discover the Future of Urban Style",
+  },
+  {
+    image: "/images/loginRegister/carousel2.png",
+    text: "Seamless Shopping, Seamless Experience",
+  },
+  {
+    image: "/images/loginRegister/carousel3.png",
+    text: "Join Our Community of Trendsetters",
+  },
+];
 
 export default function Page() {
-  const [activeTab, setActiveTab] = useState("login");
-
-  const {
-    login,
-    isLoggedIn,
-    initializeAuth,
-    redirectPath,
-    setRedirectPath,
-    refreshUser,
-  } = useAuthStore();
-  const { showSuccess, showError } = usePopupStore.getState();
-
-  const router = useRouter();
-  const pathname = usePathname();
-
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [repeatPassword, setRepeatPassword] = useState("");
-
-  useEffect(() => {
-    initializeAuth();
-  }, [initializeAuth]);
-
-  useEffect(() => {
-    if (isLoggedIn) {
-      router.push(redirectPath || "/");
-      setRedirectPath("/");
-    }
-  }, [isLoggedIn, redirectPath, router, setRedirectPath]);
-
-  useEffect(() => {
-    const lastVisitedPage = localStorage.getItem("lastPage");
-    if (!lastVisitedPage || lastVisitedPage === "/user/login-register") {
-      localStorage.setItem("lastPage", "/");
-    }
-  }, []);
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const { message } = await apiService.auth.login({ email, password });
-      await refreshUser(); // 🌟 Fetch fresh user info after login
-      showSuccess(message || "Logged in successfully!");
-      const destination = localStorage.getItem("lastPage") || "/";
-      router.push(destination);
-      localStorage.removeItem("lastPage");
-    } catch (error) {
-      showError(error.message || "Login failed");
-    }
-  };
-
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    if (password !== repeatPassword) {
-      showError("Passwords do not match");
-      return;
-    }
-    try {
-      const { message } = await apiService.auth.register({
-        name,
-        email,
-        password,
-        repeatPassword,
-      });
-      await refreshUser(); // 🌟 Fetch fresh user info after signup
-
-      showSuccess(message || "Account created successfully!");
-      const destination = localStorage.getItem("lastPage") || "/";
-      router.push(destination);
-      localStorage.removeItem("lastPage");
-    } catch (error) {
-      showError(error.message || "Signup failed");
-    }
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="w-full max-w-md p-6">
-        {!isLoggedIn ? (
-          <>
-            <div className="flex mb-6">
-              <button
-                onClick={() => setActiveTab("login")}
-                className={`flex-1 p-2 ${
-                  activeTab === "login" ? "border-b-2 border-black" : ""
-                }`}
-              >
-                Login
-              </button>
-              <button
-                onClick={() => setActiveTab("signup")}
-                className={`flex-1 p-2 ${
-                  activeTab === "signup" ? "border-b-2 border-black" : ""
-                }`}
-              >
-                Sign Up
-              </button>
-            </div>
+    <div className="flex h-[60vh]">
+      {/* Left Side: Carousel */}
+      <div className="w-2/3 hidden lg:block relative">
+        <AuthCarousel data={data} />
+      </div>
 
-            {activeTab === "login" && (
-              <form onSubmit={handleLogin}>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Email"
-                  className="w-full border p-2 mb-4"
-                />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Password"
-                  className="w-full border p-2 mb-4"
-                />
-                <button
-                  type="submit"
-                  className="w-full bg-black text-white p-2"
-                >
-                  Login
-                </button>
-              </form>
-            )}
-
-            {activeTab === "signup" && (
-              <form onSubmit={handleSignup}>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Name"
-                  className="w-full border p-2 mb-4"
-                />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Email"
-                  className="w-full border p-2 mb-4"
-                />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Password"
-                  className="w-full border p-2 mb-4"
-                />
-                <input
-                  type="password"
-                  value={repeatPassword}
-                  onChange={(e) => setRepeatPassword(e.target.value)}
-                  placeholder="Repeat Password"
-                  className="w-full border p-2 mb-4"
-                />
-                <button
-                  type="submit"
-                  className="w-full bg-black text-white p-2"
-                >
-                  Sign Up
-                </button>
-              </form>
-            )}
-          </>
-        ) : (
-          <div className="text-center">
-            <p>Redirecting...</p>
-          </div>
-        )}
+      {/* Right Side: Login / Register Form */}
+      <div className="w-1/3 flex items-center justify-center bg-gray-50">
+        <AuthForm />
       </div>
     </div>
   );
