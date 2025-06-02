@@ -28,7 +28,7 @@ export default function HeaderAuth({ isLoggedIn, user, logout }) {
           href="/user/profile"
           className="header-auth-wrapper relative overflow-hidden px-4 py-2 text-background group"
         >
-          <span className="relative z-10">User</span>
+          <span className="relative z-10">Profile</span>
           <span className="header-auth-bg absolute inset-0 bg-ogr translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300 ease-in-out z-0"></span>
         </Link>
       )}

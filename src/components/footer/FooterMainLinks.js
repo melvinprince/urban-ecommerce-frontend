@@ -4,12 +4,11 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 
 const links = [
-  { title: "About Us", link: "/about" },
-  { title: "Contact Us", link: "/contact" },
+  { title: "Home", link: "/" },
+  { title: "Help & Support", link: "/help" },
   { title: "Privacy Policy", link: "/privacy-policy" },
   { title: "Terms of Service", link: "/terms-of-service" },
   { title: "FAQ", link: "/faq" },
-  { title: "Returns & Exchanges", link: "/returns-exchanges" },
   { title: "Shipping Information", link: "/shipping-information" },
 ];
 

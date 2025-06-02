@@ -3,7 +3,6 @@ import Link from "next/link";
 const headerLinks = [
   { id: 1, text: "Home", link: "/" },
   { id: 2, text: "Categories", link: "/categories" },
-  { id: 3, text: "Help", link: "/help" },
 ];
 
 export default function HeaderLinks() {
