@@ -28,7 +28,7 @@ export default function Footer() {
           }}
           transition={{ duration: 0.6 }}
         >
-          <Logo h="5rem" w="15rem" />
+          <Logo />
           <p className="text-lg leading-relaxed w-[80%] text-justify">
             Urban E-commerce brings you the latest in fashion, delivered to your
             doorstep with style and ease. Follow us on social to stay updated
