@@ -65,7 +65,7 @@ export default function AddressBookPage() {
         );
         showSuccess("Address updated");
       } else {
-        await fetchAddresses(); // freshly added by modal itself
+        await fetchAddresses();
         showSuccess("Address added");
       }
       setShowModal(false);
@@ -78,7 +78,6 @@ export default function AddressBookPage() {
   /* ───────────── UI */
   return (
     <div className="min-h-[60vh] bg-sgr/50 py-12 px-6 md:px-20">
-      {/* global confirm portal */}
       <ConfirmModal />
 
       <div className="max-w-5xl mx-auto space-y-8">
