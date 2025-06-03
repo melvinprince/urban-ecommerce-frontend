@@ -6,10 +6,10 @@ import Link from "next/link";
 const links = [
   { title: "Home", link: "/" },
   { title: "Help & Support", link: "/help" },
-  { title: "Privacy Policy", link: "/privacy-policy" },
-  { title: "Terms of Service", link: "/terms-of-service" },
+  { title: "Privacy Policy", link: "/legal/privacy-policy" },
+  { title: "Terms of Service", link: "/legal/terms-of-service" },
   { title: "FAQ", link: "/faq" },
-  { title: "Shipping Information", link: "/shipping-information" },
+  { title: "Shipping Information", link: "/legal/shipping-information" },
 ];
 
 export default function FooterMainLinks() {

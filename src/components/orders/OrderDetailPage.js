@@ -6,11 +6,11 @@ import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Loader from "@/components/common/Loader";
 import EditOrderFormModal from "@/components/orders/EditOrderFormModal";
-import ConfirmModal from "@/components/common/ConfirmModal"; // ← NEW
+import ConfirmModal from "@/components/common/ConfirmModal";
 import apiService from "@/lib/apiService";
 import usePopupStore from "@/store/popupStore";
 import useAuthStore from "@/store/authStore";
-import useConfirmStore from "@/store/useConfirmStore"; // ← NEW
+import useConfirmStore from "@/store/useConfirmStore";
 import InvoiceDownloadButton from "../invoice/InvoiceDownloadButton";
 
 export default function OrderDetailPage() {
@@ -23,7 +23,7 @@ export default function OrderDetailPage() {
   /* ────────── stores */
   const { showError, showSuccess } = usePopupStore();
   const { isLoggedIn } = useAuthStore();
-  const { openConfirm } = useConfirmStore(); // ← NEW
+  const { openConfirm } = useConfirmStore();
 
   /* ────────── fetch order */
   useEffect(() => {
