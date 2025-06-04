@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import adminApiService from "@/lib/adminApiService";
 import usePopupStore from "@/store/popupStore";
 import OrdersTable from "@/components/admin/orders/OrdersTable";
@@ -33,9 +34,8 @@ export default function AdminOrdersPage() {
         page,
         ...filters,
       };
-
       const res = await adminApiService.orders.getAll(params);
-      setOrders(res.data.orders); // ✅ Fix here
+      setOrders(res.data.orders);
       setPagination(res.data.pagination);
     } catch (err) {
       showError(err.message);
@@ -54,7 +54,7 @@ export default function AdminOrdersPage() {
       }
     };
     fetchSummary();
-  }, []);
+  }, [showError]);
 
   useEffect(() => {
     fetchOrders(1);
@@ -72,25 +72,33 @@ export default function AdminOrdersPage() {
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Orders</h1>
-      {summary && <SummaryCards data={summary} />}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="bg-sgr/50 min-h-screen py-12 px-6 md:px-20"
+    >
+      <div className="mx-auto bg-white rounded-3xl shadow-lg p-8">
+        <h1 className="text-5xl font-eulogy mb-8 text-gray-800">Orders</h1>
 
-      <OrdersFilter filters={filters} setFilters={setFilters} />
+        {summary && <SummaryCards data={summary} />}
 
-      {loading ? (
-        <div className="flex justify-center items-center min-h-[300px]">
-          <Loader />
-        </div>
-      ) : (
-        <>
-          <OrdersTable orders={orders} onCancel={handleCancel} />
-          <Pagination
-            pagination={pagination}
-            onPageChange={(page) => fetchOrders(page)}
-          />
-        </>
-      )}
-    </div>
+        <OrdersFilter filters={filters} setFilters={setFilters} />
+
+        {loading ? (
+          <div className="flex justify-center items-center min-h-[300px]">
+            <Loader />
+          </div>
+        ) : (
+          <>
+            <OrdersTable orders={orders} onCancel={handleCancel} />
+            <Pagination
+              pagination={pagination}
+              onPageChange={(page) => fetchOrders(page)}
+            />
+          </>
+        )}
+      </div>
+    </motion.div>
   );
 }

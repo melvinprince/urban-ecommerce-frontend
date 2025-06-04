@@ -27,7 +27,7 @@ export default function OrdersFilter({ filters, setFilters }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-wrap items-end gap-4 mb-6 bg-gray-50 p-4 rounded"
+      className="flex flex-wrap items-end gap-4 mb-6 text-xl bg-gray-50 p-4 rounded"
     >
       <div>
         <label className="block font-semibold mb-1">Email</label>
@@ -37,7 +37,7 @@ export default function OrdersFilter({ filters, setFilters }) {
           value={localFilters.email}
           onChange={handleChange}
           placeholder="Search by email"
-          className="border p-2 rounded"
+          className="border p-2 rounded cursor-pointer"
         />
       </div>
 
@@ -47,7 +47,7 @@ export default function OrdersFilter({ filters, setFilters }) {
           name="status"
           value={localFilters.status}
           onChange={handleChange}
-          className="border p-2 rounded"
+          className="border p-2 rounded cursor-pointer"
         >
           <option value="">All</option>
           <option value="pending">Pending</option>
@@ -62,7 +62,7 @@ export default function OrdersFilter({ filters, setFilters }) {
           name="isPaid"
           value={localFilters.isPaid}
           onChange={handleChange}
-          className="border p-2 rounded"
+          className="border p-2 rounded cursor-pointer"
         >
           <option value="">All</option>
           <option value="true">Paid</option>
@@ -72,7 +72,7 @@ export default function OrdersFilter({ filters, setFilters }) {
 
       <button
         type="submit"
-        className="bg-blue-600 text-white px-4 py-2 rounded"
+        className="bg-ogr text-white px-4 cursor-pointer py-2 rounded"
       >
         Apply Filters
       </button>
@@ -80,7 +80,7 @@ export default function OrdersFilter({ filters, setFilters }) {
       <button
         type="button"
         onClick={handleReset}
-        className="bg-gray-300 text-gray-800 px-4 py-2 rounded"
+        className="bg-gray-300 text-gray-800 px-4 cursor-pointer py-2 rounded"
       >
         Reset
       </button>
