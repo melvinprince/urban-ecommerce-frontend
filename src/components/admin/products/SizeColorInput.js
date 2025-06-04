@@ -1,6 +1,8 @@
+// components/admin/products/SizeColorInput.jsx
 "use client";
 
 import { useState } from "react";
+import { X, Plus } from "lucide-react";
 
 export default function SizeColorInput({
   label = "Item",
@@ -18,19 +20,17 @@ export default function SizeColorInput({
   const handleAdd = () => {
     const normalized = normalizeItems();
     const trimmed = inputValue.trim();
-
     if (!trimmed) return;
 
     let formatted = trimmed;
     if (label.toLowerCase().includes("size")) {
-      formatted = trimmed.toUpperCase(); // Sizes: Fully uppercase
+      formatted = trimmed.toUpperCase();
     } else if (label.toLowerCase().includes("color")) {
       formatted =
-        trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase(); // Colors: Capitalize first letter
+        trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
     }
 
-    if (normalized.includes(formatted)) return; // Avoid duplicates
-
+    if (normalized.includes(formatted)) return;
     setItems([...normalized, formatted]);
     setInputValue("");
   };
@@ -43,37 +43,41 @@ export default function SizeColorInput({
   const safeItems = normalizeItems();
 
   return (
-    <div>
-      <label className="block font-semibold">{label}</label>
-      <div className="flex space-x-2">
+    <div className="space-y-2">
+      <label className="block text-2xl font-semibold text-gray-800">
+        {label}
+      </label>
+
+      <div className="flex items-center space-x-2">
         <input
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          placeholder={`Add ${label?.toLowerCase?.() || "item"}`}
-          className="border p-2 w-full"
+          placeholder={`Add ${label.toLowerCase()}`}
+          className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
         <button
           type="button"
           onClick={handleAdd}
-          className="bg-blue-600 text-white px-3 rounded"
+          className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-4 py-2 transition"
         >
-          Add
+          <Plus size={16} /> Add
         </button>
       </div>
+
       {safeItems.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-2">
           {safeItems.map((item, idx) => (
             <div
               key={`${item}-${idx}`}
-              className="bg-gray-200 px-2 py-1 rounded flex items-center space-x-1"
+              className="flex items-center bg-gray-200 rounded-full px-3 py-1 space-x-1 text-lg"
             >
               <span>{item}</span>
               <button
                 type="button"
                 onClick={() => handleRemove(item)}
-                className="text-red-600 text-sm"
+                className="flex items-center justify-center h-5 w-5 text-red-600 hover:text-red-800"
               >
-                ✕
+                <X size={12} />
               </button>
             </div>
           ))}

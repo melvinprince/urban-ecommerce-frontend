@@ -1,47 +1,42 @@
+// app/admin/products/add/page.jsx
 "use client";
 
-import ProductForm from "@/components/admin/products/ProductForm";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import usePopupStore from "@/store/popupStore";
-import adminApiService from "@/lib/adminApiService";
+import AdminProductsPage from "@/components/admin/products/ProductForm";
 
 export default function AddProductPage() {
   const { showError, showSuccess } = usePopupStore();
+  const router = useRouter();
 
   const handleSubmit = async (
     e,
     formData,
     existingImages,
     newImages,
-    deletedImages,
-    router
+    deletedImages
   ) => {
     e.preventDefault();
-    console.log("Creating product with data:", formData);
-    console.log("New images:", newImages);
-
     try {
       const payload = new FormData();
 
-      for (const key in formData) {
+      // Append form fields
+      Object.entries(formData).forEach(([key, value]) => {
         if (key === "categories") {
-          for (const catId of formData.categories) {
-            payload.append("categories", catId);
-          }
-        } else if (Array.isArray(formData[key])) {
-          for (const item of formData[key]) {
-            payload.append(key, item);
-          }
+          value.forEach((catId) => payload.append("categories", catId));
+        } else if (Array.isArray(value)) {
+          value.forEach((v) => payload.append(key, v));
         } else {
-          payload.append(key, formData[key]);
+          payload.append(key, value);
         }
-      }
+      });
 
-      for (const file of newImages) {
-        payload.append("images", file);
-      }
+      // Append new images
+      newImages.forEach((file) => payload.append("images", file));
 
-      const res = await adminApiService.products.create(payload);
-      showSuccess("Product created");
+      await adminApiService.products.create(payload);
+      showSuccess("Product created successfully");
       router.push("/admin/products");
     } catch (err) {
       console.error("Create error:", err);
@@ -50,9 +45,16 @@ export default function AddProductPage() {
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Add Product</h1>
-      <ProductForm onSubmit={handleSubmit} mode="create" />
-    </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="bg-sgr/50 min-h-screen py-12 px-6 md:px-20"
+    >
+      <div className="mx-auto bg-white rounded-3xl shadow-lg p-8">
+        <h1 className="text-5xl font-eulogy mb-6 text-gray-800">Add Product</h1>
+        <AdminProductsPage onSubmit={handleSubmit} mode="create" />
+      </div>
+    </motion.div>
   );
 }
