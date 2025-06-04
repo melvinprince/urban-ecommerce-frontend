@@ -1,11 +1,14 @@
+// File: app/admin/categories/page.jsx
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import adminApiService from "@/lib/adminApiService";
 import usePopupStore from "@/store/popupStore";
 import useConfirmStore from "@/store/useConfirmStore";
-import CategoryTable from "@/components/admin/categories/CategoryTable";
+import buildCategoryTree from "@/components/admin/categories/helpers";
+import CategoryAccordionList from "@/components/admin/categories/CategoryAccordionList";
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState([]);
@@ -13,21 +16,23 @@ export default function AdminCategoriesPage() {
   const { openConfirm } = useConfirmStore();
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    (async () => {
       try {
         const res = await adminApiService.categories.getAll();
+        console.log("Fetched categories:", res.data);
+
+        // Assume res.data is an array of category objects, each with at least:
+        // { _id, name, parent (or parentId), ... }
         setCategories(res.data);
       } catch (err) {
         showError(err.message);
       }
-    };
-
-    fetchCategories();
+    })();
   }, [showError]);
 
   const handleDelete = (id) => {
     openConfirm({
-      message: "Are you sure you want to delete this category?",
+      message: "Delete this category?",
       onConfirm: async () => {
         try {
           await adminApiService.categories.delete(id);
@@ -40,19 +45,30 @@ export default function AdminCategoriesPage() {
     });
   };
 
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Categories</h1>
-        <Link
-          href="/admin/categories/add"
-          className="text-blue-600 font-semibold"
-        >
-          Add Category
-        </Link>
-      </div>
+  // Build a nested tree from the flat array
+  const tree = buildCategoryTree(categories);
 
-      <CategoryTable categories={categories} onDelete={handleDelete} />
+  return (
+    <div className="bg-sgr/50 min-h-screen py-12 px-6 md:px-20">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mx-auto bg-white rounded-3xl shadow-lg p-8"
+      >
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-5xl font-eulogy text-gray-800">Categories</h1>
+          <Link
+            href="/admin/categories/add"
+            className="inline-flex items-center gap-2 bg-sgr hover:bg-ogr text-white px-5 py-3 rounded-full transition text-xl"
+          >
+            + Add Category
+          </Link>
+        </div>
+
+        {/* Pass the nested tree into CategoryAccordionList */}
+        <CategoryAccordionList categories={tree} onDelete={handleDelete} />
+      </motion.div>
     </div>
   );
 }
