@@ -1,19 +1,22 @@
+// app/admin/products/[id]/page.jsx
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { useParams, useRouter } from "next/navigation";
 import ProductForm from "@/components/admin/products/ProductForm";
+import ReviewSection from "@/components/admin/products/ReviewSection";
 import adminApiService from "@/lib/adminApiService";
 import usePopupStore from "@/store/popupStore";
-import { useParams } from "next/navigation";
-import ReviewSection from "@/components/admin/products/ReviewSection";
 
 export default function EditProductPage() {
   const { id } = useParams();
+  const router = useRouter();
   const [initialData, setInitialData] = useState(null);
   const { showError, showSuccess } = usePopupStore();
 
   useEffect(() => {
-    const fetchProduct = async () => {
+    (async () => {
       try {
         const res = await adminApiService.products.getById(id);
         const product = res.data;
@@ -38,8 +41,7 @@ export default function EditProductPage() {
       } catch (err) {
         showError(err.message);
       }
-    };
-    fetchProduct();
+    })();
   }, [id, showError]);
 
   const handleSubmit = async (
@@ -47,65 +49,60 @@ export default function EditProductPage() {
     formData,
     existingImages,
     newImages,
-    deletedImages,
-    router
+    deletedImages
   ) => {
+    e.preventDefault();
     deletedImages = deletedImages || [];
-
-    console.log("---- handleSubmit called ----");
-    console.log("formData:", formData);
-    console.log("existingImages:", existingImages);
-    console.log("newImages:", newImages);
-    console.log("deletedImages (raw):", deletedImages);
 
     try {
       const payload = new FormData();
-
-      for (const key in formData) {
+      Object.entries(formData).forEach(([key, value]) => {
         if (key === "categories") {
-          for (const catId of formData.categories) {
-            payload.append("categories", catId);
-          }
-        } else if (Array.isArray(formData[key])) {
-          for (const item of formData[key]) {
-            payload.append(key, item);
-          }
+          value.forEach((catId) => payload.append("categories", catId));
+        } else if (Array.isArray(value)) {
+          value.forEach((v) => payload.append(key, v));
         } else {
-          payload.append(key, formData[key]);
+          payload.append(key, value);
         }
-      }
+      });
 
-      for (const file of newImages) {
-        payload.append("images", file);
-      }
-
-      for (const img of deletedImages) {
-        console.log("Appending deleted image:", img);
-        payload.append("deletedImages", img);
-      }
-
-      console.log("Final payload ready - sending to backend...");
+      newImages.forEach((file) => payload.append("images", file));
+      deletedImages.forEach((img) => payload.append("deletedImages", img));
 
       await adminApiService.products.update(id, payload);
       showSuccess("Product updated");
       router.push("/admin/products");
     } catch (err) {
-      console.error("Error in handleSubmit:", err);
       showError(err.message);
     }
   };
 
-  if (!initialData) return <div>Loading...</div>;
+  if (!initialData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-sgr/50">
+        <p className="text-xl text-gray-600">Loading product...</p>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Edit Product</h1>
-      <ProductForm
-        initialData={initialData}
-        onSubmit={handleSubmit}
-        mode="edit"
-      />
-      <ReviewSection productId={id} />
-    </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="bg-sgr/50 min-h-screen py-12 px-6 md:px-20"
+    >
+      <div className="mx-auto bg-white rounded-3xl shadow-lg p-10 space-y-8">
+        <h1 className="text-3xl font-eulogy text-gray-800">Edit Product</h1>
+
+        <ProductForm
+          initialData={initialData}
+          onSubmit={handleSubmit}
+          mode="edit"
+        />
+
+        <ReviewSection productId={id} />
+      </div>
+    </motion.div>
   );
 }

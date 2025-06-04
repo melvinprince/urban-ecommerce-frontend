@@ -68,8 +68,8 @@ export default function AdminProductsPage() {
           <Link
             href="/admin/products/add"
             className="mt-3 sm:mt-0 inline-flex items-center gap-2 rounded-full
-                       bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3
-                       transition shadow-md"
+                       bg-sgr hover:bg-ogr text-white px-[2rem] py-[1rem] w-[20rem]
+                       transition shadow-md text-2xl"
           >
             <Plus size={18} /> Add Product
           </Link>
