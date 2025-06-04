@@ -1,7 +1,9 @@
+// File: app/admin/coupons/[id]/edit/page.jsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { motion } from "framer-motion";
 import adminApiService from "@/lib/adminApiService";
 import usePopupStore from "@/store/popupStore";
 import Loader from "@/components/common/Loader";
@@ -69,7 +71,7 @@ export default function EditCouponPage() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
+      <div className="flex justify-center items-center min-h-screen bg-sgr/50">
         <Loader />
       </div>
     );
@@ -77,81 +79,168 @@ export default function EditCouponPage() {
 
   if (!formData) {
     return (
-      <div className="text-center text-gray-500">
-        Failed to load coupon. Please try again.
+      <div className="flex justify-center items-center min-h-screen bg-sgr/50">
+        <p className="text-2xl text-gray-700">
+          Failed to load coupon. Please try again.
+        </p>
       </div>
     );
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Edit Coupon</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          name="code"
-          value={formData.code}
-          onChange={handleChange}
-          placeholder="Code"
-          className="border p-2 w-full"
-        />
-        <label className="block font-semibold">Type</label>
-        <select
-          name="type"
-          value={formData.type}
-          onChange={handleChange}
-          className="border p-2 w-full"
-        >
-          <option value="percentage">Percentage</option>
-          <option value="fixed">Fixed</option>
-        </select>
-        <input
-          name="value"
-          type="number"
-          value={formData.value}
-          onChange={handleChange}
-          placeholder="Value"
-          className="border p-2 w-full"
-        />
-        <input
-          name="usageLimit"
-          type="number"
-          value={formData.usageLimit}
-          onChange={handleChange}
-          placeholder="Usage Limit"
-          className="border p-2 w-full"
-        />
-        <input
-          name="minSubtotal"
-          type="number"
-          value={formData.minSubtotal}
-          onChange={handleChange}
-          placeholder="Minimum Subtotal"
-          className="border p-2 w-full"
-        />
-        <label className="block font-semibold">Start Date</label>
-        <input
-          name="startDate"
-          type="date"
-          value={formData.startDate}
-          onChange={handleChange}
-          className="border p-2 w-full"
-        />
-        <label className="block font-semibold">Expiry Date</label>
-        <input
-          name="expiryDate"
-          type="date"
-          value={formData.expiryDate}
-          onChange={handleChange}
-          className="border p-2 w-full"
-        />
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
-        >
-          {isSubmitting ? "Updating..." : "Update Coupon"}
-        </button>
-      </form>
-    </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="bg-sgr/50 min-h-screen py-12 px-6 md:px-20 flex items-center justify-center"
+    >
+      <div className="mx-auto bg-white rounded-3xl shadow-lg p-8 w-[50%]">
+        <h1 className="text-5xl font-eulogy mb-8 text-gray-800">Edit Coupon</h1>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Code */}
+          <div>
+            <label
+              htmlFor="code"
+              className="block text-xl font-medium text-gray-700 mb-2"
+            >
+              Code
+            </label>
+            <input
+              id="code"
+              name="code"
+              placeholder="Coupon Code"
+              value={formData.code}
+              onChange={handleChange}
+              className="border border-gray-300 rounded-2xl p-3 w-full text-lg focus:outline-none focus:ring-2 focus:ring-sgr"
+            />
+          </div>
+
+          {/* Type */}
+          <div>
+            <label
+              htmlFor="type"
+              className="block text-xl font-medium text-gray-700 mb-2"
+            >
+              Type
+            </label>
+            <select
+              id="type"
+              name="type"
+              value={formData.type}
+              onChange={handleChange}
+              className="border border-gray-300 rounded-2xl p-3 w-full text-lg bg-white focus:outline-none focus:ring-2 focus:ring-sgr"
+            >
+              <option value="percentage">Percentage</option>
+              <option value="fixed">Fixed</option>
+            </select>
+          </div>
+
+          {/* Value */}
+          <div>
+            <label
+              htmlFor="value"
+              className="block text-xl font-medium text-gray-700 mb-2"
+            >
+              Value
+            </label>
+            <input
+              id="value"
+              name="value"
+              type="number"
+              placeholder="Discount Value"
+              value={formData.value}
+              onChange={handleChange}
+              className="border border-gray-300 rounded-2xl p-3 w-full text-lg focus:outline-none focus:ring-2 focus:ring-sgr"
+            />
+          </div>
+
+          {/* Usage Limit */}
+          <div>
+            <label
+              htmlFor="usageLimit"
+              className="block text-xl font-medium text-gray-700 mb-2"
+            >
+              Usage Limit
+            </label>
+            <input
+              id="usageLimit"
+              name="usageLimit"
+              type="number"
+              placeholder="Maximum Uses"
+              value={formData.usageLimit}
+              onChange={handleChange}
+              className="border border-gray-300 rounded-2xl p-3 w-full text-lg focus:outline-none focus:ring-2 focus:ring-sgr"
+            />
+          </div>
+
+          {/* Minimum Subtotal */}
+          <div>
+            <label
+              htmlFor="minSubtotal"
+              className="block text-xl font-medium text-gray-700 mb-2"
+            >
+              Minimum Subtotal
+            </label>
+            <input
+              id="minSubtotal"
+              name="minSubtotal"
+              type="number"
+              placeholder="Minimum Order Amount"
+              value={formData.minSubtotal}
+              onChange={handleChange}
+              className="border border-gray-300 rounded-2xl p-3 w-full text-lg focus:outline-none focus:ring-2 focus:ring-sgr"
+            />
+          </div>
+
+          {/* Start Date */}
+          <div>
+            <label
+              htmlFor="startDate"
+              className="block text-xl font-medium text-gray-700 mb-2"
+            >
+              Start Date
+            </label>
+            <input
+              id="startDate"
+              name="startDate"
+              type="date"
+              value={formData.startDate}
+              onChange={handleChange}
+              className="border border-gray-300 rounded-2xl p-3 w-full text-lg focus:outline-none focus:ring-2 focus:ring-sgr"
+            />
+          </div>
+
+          {/* Expiry Date */}
+          <div>
+            <label
+              htmlFor="expiryDate"
+              className="block text-xl font-medium text-gray-700 mb-2"
+            >
+              Expiry Date
+            </label>
+            <input
+              id="expiryDate"
+              name="expiryDate"
+              type="date"
+              value={formData.expiryDate}
+              onChange={handleChange}
+              className="border border-gray-300 rounded-2xl p-3 w-full text-lg focus:outline-none focus:ring-2 focus:ring-sgr"
+            />
+          </div>
+
+          {/* Submit Button */}
+          <div className="pt-4">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="inline-flex items-center gap-2 bg-sgr hover:bg-ogr text-white px-5 py-3 rounded-full text-xl transition disabled:opacity-50"
+            >
+              {isSubmitting ? <Loader /> : "Update Coupon"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </motion.div>
   );
 }

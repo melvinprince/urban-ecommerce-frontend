@@ -1,7 +1,9 @@
+// File: app/admin/coupons/page.jsx
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import adminApiService from "@/lib/adminApiService";
 import usePopupStore from "@/store/popupStore";
 import useConfirmStore from "@/store/useConfirmStore";
@@ -47,73 +49,85 @@ export default function AdminCouponsPage() {
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Coupons</h1>
-        <Link href="/admin/coupons/add" className="text-blue-600 font-semibold">
-          Add Coupon
-        </Link>
-      </div>
-
-      {loading ? (
-        <Loader />
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full table-auto border-collapse border">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="p-2 border">Code</th>
-                <th className="p-2 border">Type</th>
-                <th className="p-2 border">Value</th>
-                <th className="p-2 border">Usage</th>
-                <th className="p-2 border">Validity</th>
-                <th className="p-2 border">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {coupons.map((coupon) => (
-                <tr key={coupon._id}>
-                  <td className="p-2 border">{coupon.code}</td>
-                  <td className="p-2 border">{coupon.type}</td>
-                  <td className="p-2 border">
-                    {coupon.type === "percentage"
-                      ? `${coupon.value}%`
-                      : `$${coupon.value}`}
-                  </td>
-                  <td className="p-2 border">
-                    {coupon.usedCount}/{coupon.usageLimit}
-                  </td>
-                  <td className="p-2 border">
-                    {new Date(coupon.startDate).toLocaleDateString()} -{" "}
-                    {new Date(coupon.expiryDate).toLocaleDateString()}
-                  </td>
-                  <td className="p-2 border">
-                    <Link
-                      href={`/admin/coupons/${coupon._id}/edit`}
-                      className="text-blue-600 mr-2"
-                    >
-                      Edit
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(coupon._id)}
-                      className="text-red-600"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {coupons.length === 0 && (
-                <tr>
-                  <td className="p-2 border text-center" colSpan="6">
-                    No coupons found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="bg-sgr/50 min-h-screen py-12 px-6 md:px-20 flex items-center justify-center"
+    >
+      <div className="mx-auto bg-white rounded-3xl shadow-lg p-8 w-[80%]">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-5xl font-eulogy text-gray-800">Coupons</h1>
+          <Link
+            href="/admin/coupons/add"
+            className="inline-flex items-center gap-2 bg-sgr hover:bg-ogr text-white px-5 py-3 rounded-full text-xl transition"
+          >
+            + Add Coupon
+          </Link>
         </div>
-      )}
-    </div>
+
+        {loading ? (
+          <div className="flex justify-center items-center min-h-[300px]">
+            <Loader />
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full table-auto border-collapse border">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="p-4 border text-left text-lg">Code</th>
+                  <th className="p-4 border text-left text-lg">Type</th>
+                  <th className="p-4 border text-left text-lg">Value</th>
+                  <th className="p-4 border text-left text-lg">Usage</th>
+                  <th className="p-4 border text-left text-lg">Validity</th>
+                  <th className="p-4 border text-left text-lg">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {coupons.map((coupon) => (
+                  <tr key={coupon._id} className="hover:bg-gray-50">
+                    <td className="p-4 border text-lg">{coupon.code}</td>
+                    <td className="p-4 border text-lg">{coupon.type}</td>
+                    <td className="p-4 border text-lg">
+                      {coupon.type === "percentage"
+                        ? `${coupon.value}%`
+                        : `QAR ${coupon.value}`}
+                    </td>
+                    <td className="p-4 border text-lg">
+                      {coupon.usedCount}/{coupon.usageLimit}
+                    </td>
+                    <td className="p-4 border text-lg">
+                      {new Date(coupon.startDate).toLocaleDateString()} –{" "}
+                      {new Date(coupon.expiryDate).toLocaleDateString()}
+                    </td>
+                    <td className="p-4 border flex items-center gap-4 text-lg">
+                      <Link
+                        href={`/admin/coupons/${coupon._id}/edit`}
+                        className="text-blue-600 hover:underline"
+                      >
+                        Edit
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(coupon._id)}
+                        className="text-red-600 hover:underline"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {coupons.length === 0 && (
+                  <tr>
+                    <td className="p-4 border text-center text-lg" colSpan="6">
+                      No coupons found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </motion.div>
   );
 }
