@@ -1,7 +1,9 @@
+// File: app/admin/categories/[id]/edit/page.jsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { motion } from "framer-motion";
 import adminApiService from "@/lib/adminApiService";
 import usePopupStore from "@/store/popupStore";
 
@@ -29,7 +31,8 @@ export default function EditCategoryPage() {
           metaDescription: cat.metaDescription || "",
           image: null,
         });
-        setCategories(categoriesRes.data.filter((c) => c._id !== id)); // Avoid self as parent
+        // Exclude self
+        setCategories(categoriesRes.data.filter((c) => c._id !== id));
       } catch (err) {
         showError(err.message);
       }
@@ -51,7 +54,9 @@ export default function EditCategoryPage() {
     try {
       const payload = new FormData();
       for (const key in formData) {
-        if (formData[key]) payload.append(key, formData[key]);
+        if (formData[key]) {
+          payload.append(key, formData[key]);
+        }
       }
       await adminApiService.categories.update(id, payload);
       showSuccess("Category updated");
@@ -61,85 +66,172 @@ export default function EditCategoryPage() {
     }
   };
 
-  if (!formData) return <div>Loading...</div>;
+  if (!formData) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-sgr/50">
+        <p className="text-2xl text-gray-700">Loading...</p>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Edit Category</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          placeholder="Name"
-          className="border p-2 w-full"
-        />
-        <input
-          name="slug"
-          value={formData.slug}
-          onChange={handleChange}
-          placeholder="Slug"
-          className="border p-2 w-full"
-        />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="bg-sgr/50 min-h-screen py-12 px-6 md:px-20 flex items-center justify-center"
+    >
+      <div className="mx-auto bg-white rounded-3xl shadow-lg p-8 w-full">
+        <h1 className="text-5xl font-eulogy mb-6 text-gray-800">
+          Edit Category
+        </h1>
 
-        <label className="block font-semibold">
-          Parent Category (optional)
-        </label>
-        <select
-          name="parent"
-          value={formData.parent}
-          onChange={handleChange}
-          className="border p-2 w-full"
-        >
-          <option value="">-- None --</option>
-          {categories.map((cat) => (
-            <option key={cat._id} value={cat._id}>
-              {cat.name}
-            </option>
-          ))}
-        </select>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Name */}
+          <div>
+            <label
+              htmlFor="name"
+              className="block text-xl font-medium text-gray-700 mb-2"
+            >
+              Name
+            </label>
+            <input
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Category Name"
+              className="border border-gray-300 rounded-2xl p-3 w-full text-lg focus:outline-none focus:ring-2 focus:ring-sgr"
+            />
+          </div>
 
-        <textarea
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          placeholder="Description"
-          className="border p-2 w-full"
-        />
+          {/* Slug */}
+          <div>
+            <label
+              htmlFor="slug"
+              className="block text-xl font-medium text-gray-700 mb-2"
+            >
+              Slug
+            </label>
+            <input
+              id="slug"
+              name="slug"
+              value={formData.slug}
+              onChange={handleChange}
+              placeholder="category-slug"
+              className="border border-gray-300 rounded-2xl p-3 w-full text-lg focus:outline-none focus:ring-2 focus:ring-sgr"
+            />
+          </div>
 
-        <input
-          name="metaTitle"
-          value={formData.metaTitle}
-          onChange={handleChange}
-          placeholder="Meta Title (SEO)"
-          className="border p-2 w-full"
-        />
-        <textarea
-          name="metaDescription"
-          value={formData.metaDescription}
-          onChange={handleChange}
-          placeholder="Meta Description (SEO)"
-          className="border p-2 w-full"
-        />
+          {/* Parent Category */}
+          <div>
+            <label
+              htmlFor="parent"
+              className="block text-xl font-medium text-gray-700 mb-2"
+            >
+              Parent Category (optional)
+            </label>
+            <select
+              id="parent"
+              name="parent"
+              value={formData.parent}
+              onChange={handleChange}
+              className="border border-gray-300 rounded-2xl p-3 w-full text-lg bg-white focus:outline-none focus:ring-2 focus:ring-sgr"
+            >
+              <option value="">— None —</option>
+              {categories.map((cat) => (
+                <option key={cat._id} value={cat._id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <label className="block font-semibold">
-          Thumbnail Image (optional)
-        </label>
-        <input
-          type="file"
-          name="image"
-          accept="image/*"
-          onChange={handleChange}
-          className="border p-2 w-full"
-        />
+          {/* Description */}
+          <div>
+            <label
+              htmlFor="description"
+              className="block text-xl font-medium text-gray-700 mb-2"
+            >
+              Description
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Category Description"
+              rows={4}
+              className="border border-gray-300 rounded-2xl p-3 w-full text-lg focus:outline-none focus:ring-2 focus:ring-sgr resize-none"
+            />
+          </div>
 
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          Update Category
-        </button>
-      </form>
-    </div>
+          {/* Meta Title (SEO) */}
+          <div>
+            <label
+              htmlFor="metaTitle"
+              className="block text-xl font-medium text-gray-700 mb-2"
+            >
+              Meta Title (SEO)
+            </label>
+            <input
+              id="metaTitle"
+              name="metaTitle"
+              value={formData.metaTitle}
+              onChange={handleChange}
+              placeholder="SEO Meta Title"
+              className="border border-gray-300 rounded-2xl p-3 w-full text-lg focus:outline-none focus:ring-2 focus:ring-sgr"
+            />
+          </div>
+
+          {/* Meta Description (SEO) */}
+          <div>
+            <label
+              htmlFor="metaDescription"
+              className="block text-xl font-medium text-gray-700 mb-2"
+            >
+              Meta Description (SEO)
+            </label>
+            <textarea
+              id="metaDescription"
+              name="metaDescription"
+              value={formData.metaDescription}
+              onChange={handleChange}
+              placeholder="SEO Meta Description"
+              rows={3}
+              className="border border-gray-300 rounded-2xl p-3 w-full text-lg focus:outline-none focus:ring-2 focus:ring-sgr resize-none"
+            />
+          </div>
+
+          {/* Thumbnail Image */}
+          <div>
+            <label
+              htmlFor="image"
+              className="block text-xl font-medium text-gray-700 mb-2"
+            >
+              Thumbnail Image (optional)
+            </label>
+            <input
+              id="image"
+              type="file"
+              name="image"
+              accept="image/*"
+              onChange={handleChange}
+              className="w-full bg-gray-200 border border-gray-300 rounded-2xl p-3 text-lg focus:outline-none focus:ring-2 focus:ring-sgr file:cursor-pointer file:rounded-full file:border-0 file:bg-sgr file:text-white file:px-4 file:py-2 file:text-sm hover:file:bg-ogr"
+            />
+          </div>
+
+          {/* Submit Button */}
+          <div className="pt-4">
+            <button
+              type="submit"
+              className="inline-flex items-center gap-2 bg-sgr hover:bg-ogr text-white px-5 py-3 rounded-full text-xl transition"
+            >
+              Update Category
+            </button>
+          </div>
+        </form>
+      </div>
+    </motion.div>
   );
 }
