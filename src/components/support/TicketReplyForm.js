@@ -1,6 +1,8 @@
+// File: components/support/TicketReplyForm.jsx
 "use client";
 
 import { useState } from "react";
+import Loader from "@/components/common/Loader";
 
 export default function TicketReplyForm({ onSubmit }) {
   const [message, setMessage] = useState("");
@@ -40,28 +42,35 @@ export default function TicketReplyForm({ onSubmit }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <textarea
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         rows={4}
         required
         placeholder="Write your reply..."
-        className="w-full border p-2 rounded"
+        className="w-full border border-gray-300 rounded-2xl p-4 text-lg focus:outline-none focus:ring-2 focus:ring-sgr resize-none"
       />
       <input
         type="file"
         multiple
         accept="image/*,.pdf,video/mp4"
         onChange={handleFileChange}
-        className="block"
+        className="block bg-gray-200 p-4 rounded-full cursor-pointer w-full text-sm"
       />
+      {files.length > 0 && (
+        <ul className="mt-2 text-sm  text-gray-600 space-y-1">
+          {files.map((f, idx) => (
+            <li key={idx}>{f.name}</li>
+          ))}
+        </ul>
+      )}
       <button
         type="submit"
         disabled={loading}
-        className="bg-ogr text-white px-4 py-2 rounded"
+        className="inline-flex items-center gap-2 bg-ogr hover:bg-ogr/90 text-white px-6 py-3 rounded-full text-xl transition disabled:opacity-50 cursor-pointer"
       >
-        {loading ? "Sending…" : "Send Reply"}
+        {loading ? <Loader /> : "Send Reply"}
       </button>
     </form>
   );
