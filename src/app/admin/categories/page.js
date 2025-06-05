@@ -19,7 +19,6 @@ export default function AdminCategoriesPage() {
     (async () => {
       try {
         const res = await adminApiService.categories.getAll();
-        console.log("Fetched categories:", res.data);
 
         // Assume res.data is an array of category objects, each with at least:
         // { _id, name, parent (or parentId), ... }

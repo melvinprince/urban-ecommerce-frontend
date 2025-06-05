@@ -65,7 +65,6 @@ const apiService = {
       return api.put(`/api/cart/${id}`, item);
     },
     clear: () => {
-      console.log("[apiService.cart.clear] Called");
       return api.delete("/api/cart/clear");
     },
   },

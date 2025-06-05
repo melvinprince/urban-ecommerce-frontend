@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence, useAnimation } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
@@ -14,12 +14,12 @@ export default function CategoryCarousel({ slides }) {
   const timeoutRef = useRef(null);
   const imageControls = useAnimation();
 
-  const resetTimer = () => {
+  const resetTimer = useCallback(() => {
     clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
       setIndex((prev) => (prev + 1) % slides.length);
     }, SLIDE_INTERVAL);
-  };
+  }, [slides.length]);
 
   useEffect(() => {
     resetTimer();
@@ -32,7 +32,7 @@ export default function CategoryCarousel({ slides }) {
       },
     });
     return () => clearTimeout(timeoutRef.current);
-  }, [index, imageControls]);
+  }, [index, imageControls, resetTimer]);
 
   const goToSlide = (i) => {
     setIndex(i);

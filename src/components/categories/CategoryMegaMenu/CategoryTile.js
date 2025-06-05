@@ -9,8 +9,6 @@ export default function CategoryTile({
   onHover,
   labelSize = "text-base",
 }) {
-  console.log("Rendering CategoryTile for:", category.image);
-
   return (
     <Link
       href={`/categories/${category.slug}`}

@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Player } from "@lottiefiles/react-lottie-player";
+import dynamic from "next/dynamic";
+
+const Player = dynamic(
+  () => import("@lottiefiles/react-lottie-player").then((m) => m.Player),
+  { ssr: false }
+);
 
 export default function ProfileTile({ href, src, title, description }) {
   return (
