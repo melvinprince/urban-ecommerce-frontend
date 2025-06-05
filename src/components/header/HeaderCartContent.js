@@ -2,9 +2,15 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Player } from "@lottiefiles/react-lottie-player";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import useCartStore from "@/store/cartStore";
+
+// Lazy load the heavy lottie player only on the client
+const Player = dynamic(
+  () => import("@lottiefiles/react-lottie-player").then((m) => m.Player),
+  { ssr: false }
+);
 
 export default function HeaderCartContent() {
   const [isHovered, setIsHovered] = useState(false);
